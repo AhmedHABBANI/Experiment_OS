@@ -1,5 +1,7 @@
 """Resampling-based analyses for independent A/B samples."""
 
+from collections.abc import Callable
+
 import numpy as np
 
 from experiment_os_stats.analyses._common import normalize_alternative, validate_alpha
@@ -63,6 +65,42 @@ def _count_extreme_statistics(
     if alternative is Alternative.LESS:
         return int(np.sum(null_distribution <= observed_statistic))
     return int(np.sum(np.abs(null_distribution) >= abs(observed_statistic)))
+
+
+def _bootstrap_statistic_difference(
+    values_a: np.ndarray,
+    values_b: np.ndarray,
+    *,
+    statistic: Callable[[np.ndarray], float],
+    n_resamples: int,
+    confidence_level: float,
+    seed: int | None,
+) -> tuple[float, np.ndarray, float, float, float]:
+    """Bootstrap a B-minus-A statistic and return estimate, distribution, SE, and bounds."""
+    n_a = int(values_a.size)
+    n_b = int(values_b.size)
+    estimate = float(statistic(values_b) - statistic(values_a))
+    bootstrap_distribution = np.empty(n_resamples, dtype=float)
+    rng = np.random.default_rng(seed)
+
+    for index in range(n_resamples):
+        resampled_a = rng.choice(values_a, size=n_a, replace=True)
+        resampled_b = rng.choice(values_b, size=n_b, replace=True)
+        bootstrap_distribution[index] = float(statistic(resampled_b) - statistic(resampled_a))
+
+    tail_probability = (1 - confidence_level) / 2
+    lower, upper = np.quantile(
+        bootstrap_distribution,
+        [tail_probability, 1 - tail_probability],
+    )
+    standard_error = float(np.std(bootstrap_distribution, ddof=1))
+    return (
+        estimate,
+        bootstrap_distribution,
+        standard_error,
+        float(lower),
+        float(upper),
+    )
 
 
 def permutation_mean_test(
@@ -185,21 +223,16 @@ def bootstrap_mean_difference(
     values_b = validated.group_b.values
     n_a = int(values_a.size)
     n_b = int(values_b.size)
-    estimate = float(np.mean(values_b) - np.mean(values_a))
-    bootstrap_distribution = np.empty(n_resamples, dtype=float)
-    rng = np.random.default_rng(seed)
-
-    for index in range(n_resamples):
-        resampled_a = rng.choice(values_a, size=n_a, replace=True)
-        resampled_b = rng.choice(values_b, size=n_b, replace=True)
-        bootstrap_distribution[index] = float(np.mean(resampled_b) - np.mean(resampled_a))
-
-    tail_probability = (1 - confidence_level) / 2
-    lower, upper = np.quantile(
-        bootstrap_distribution,
-        [tail_probability, 1 - tail_probability],
+    estimate, bootstrap_distribution, standard_error, lower, upper = (
+        _bootstrap_statistic_difference(
+            values_a,
+            values_b,
+            statistic=np.mean,
+            n_resamples=n_resamples,
+            confidence_level=confidence_level,
+            seed=seed,
+        )
     )
-    standard_error = float(np.std(bootstrap_distribution, ddof=1))
 
     return StatisticalResult(
         test_name="bootstrap_mean_difference",
@@ -208,8 +241,8 @@ def bootstrap_mean_difference(
         alternative=Alternative.TWO_SIDED,
         estimate=estimate,
         confidence_interval=ConfidenceInterval(
-            lower=float(lower),
-            upper=float(upper),
+            lower=lower,
+            upper=upper,
             level=confidence_level,
             parameter="difference_in_means_b_minus_a",
             method="bootstrap_percentile",
@@ -224,6 +257,84 @@ def bootstrap_mean_difference(
             "interval": (
                 "The percentile interval describes bootstrap uncertainty around the "
                 "estimated mean difference."
+            ),
+        },
+        metadata={
+            "n_a": n_a,
+            "n_b": n_b,
+            "difference_direction": "group_b_minus_group_a",
+            "n_resamples": n_resamples,
+            "seed": seed,
+            "standard_error": standard_error,
+            "interval_method": "percentile",
+            "bootstrap_distribution": [float(value) for value in bootstrap_distribution],
+        },
+    )
+
+
+def bootstrap_median_difference(
+    group_a: SampleLike,
+    group_b: SampleLike,
+    *,
+    confidence_level: float = 0.95,
+    n_resamples: int = 10_000,
+    seed: int | None = None,
+    missing_policy: MissingValuePolicy = MissingValuePolicy.DROP,
+) -> StatisticalResult:
+    """Estimate the independent median difference B minus A by percentile bootstrap.
+
+    Each group is resampled independently with replacement. A fixed seed reproduces
+    the bootstrap distribution, standard error, and percentile interval.
+    """
+    _validate_confidence_level(confidence_level)
+    _validate_resample_count(n_resamples, parameter_name="n_resamples")
+    _validate_seed(seed)
+    validated = validate_ab_samples(
+        group_a,
+        group_b,
+        metric_type=MetricType.CONTINUOUS,
+        missing_policy=missing_policy,
+        minimum_size=2,
+    )
+
+    values_a = validated.group_a.values
+    values_b = validated.group_b.values
+    n_a = int(values_a.size)
+    n_b = int(values_b.size)
+    estimate, bootstrap_distribution, standard_error, lower, upper = (
+        _bootstrap_statistic_difference(
+            values_a,
+            values_b,
+            statistic=np.median,
+            n_resamples=n_resamples,
+            confidence_level=confidence_level,
+            seed=seed,
+        )
+    )
+
+    return StatisticalResult(
+        test_name="bootstrap_median_difference",
+        metric_type=MetricType.CONTINUOUS,
+        alpha=1 - confidence_level,
+        alternative=Alternative.TWO_SIDED,
+        estimate=estimate,
+        confidence_interval=ConfidenceInterval(
+            lower=lower,
+            upper=upper,
+            level=confidence_level,
+            parameter="difference_in_medians_b_minus_a",
+            method="bootstrap_percentile",
+        ),
+        assumptions=(
+            "The two groups contain independent observations.",
+            "Observations within each group are representative and identically distributed.",
+            "The empirical group distributions approximate their populations.",
+        ),
+        interpretation={
+            "estimand": "The population median difference, group B minus group A.",
+            "interval": (
+                "The percentile interval describes bootstrap uncertainty around the "
+                "estimated median difference."
             ),
         },
         metadata={

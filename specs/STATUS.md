@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 6 - Mann-Whitney, permutation and mean bootstrap completed in the statistics library
+Phase 6 - Mann-Whitney, permutation and mean/median bootstrap implemented
 
 ## Completed
 
@@ -186,8 +186,30 @@ Phase 6 - Mann-Whitney, permutation and mean bootstrap completed in the statisti
 - Fixed-seed bootstrap distribution and interval reproducibility validated
 - Bootstrap result validated for strict JSON compatibility
 - Bootstrap mean difference exported from the public statistics package interface
+- Independent percentile bootstrap for the median difference implemented in `experiment_os_stats`
+- Median bootstrap estimate consistently oriented as median B minus median A
+- Mean and median bootstrap procedures share one private resampling engine
+- Median bootstrap reuses the established replication, confidence-level and seed contracts
+- Median bootstrap standard error and percentile interval implemented
+- Complete median bootstrap distribution and reproducibility metadata returned
+- Median bootstrap deliberately returns no p-value or null-hypothesis decision
+- Constant groups supported with zero median-bootstrap standard error and a point interval
+- Median bootstrap standard error and percentile interval validated against SciPy
+- Fixed-seed median-bootstrap distribution and interval reproducibility validated
+- Mean and median estimands distinguished explicitly with an extreme-value test
+- Median bootstrap result validated for strict JSON compatibility
+- Bootstrap median difference exported from the public statistics package interface
 
 ## Validation
+
+- Median-bootstrap initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 66 files already formatted
+- Median-bootstrap initial `.\.venv\Scripts\ruff.exe check .`: passed
+- First median-bootstrap initial Docker validation attempt: timed out during environment preparation before tests ran
+- Median-bootstrap initial Docker validation retry: passed, 261 tests, 99.28% `experiment_os_stats` coverage
+- Targeted median, mean and permutation regression validation: passed, 53 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 67 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 240 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 272 tests, 99.29% `experiment_os_stats` coverage
 
 - Mean-bootstrap initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 65 files already formatted
 - Mean-bootstrap initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -474,15 +496,16 @@ Phase 6 - Mann-Whitney, permutation and mean bootstrap completed in the statisti
 - `packages/experiment_os_stats/src/experiment_os_stats/analyses/resampling.py`
 - `packages/experiment_os_stats/tests/test_permutation_mean.py`
 - `packages/experiment_os_stats/tests/test_bootstrap_mean.py`
+- `packages/experiment_os_stats/tests/test_bootstrap_median.py`
 
 ## Current milestone status
 
-- Phase 6 Mann-Whitney, permutation and mean-bootstrap milestones completed in the statistics library
+- Phase 6 functional methods completed in the statistics library: Mann-Whitney, permutation, and mean/median percentile bootstrap
 
 ## Next milestone
 
-Continue Phase 6 with a limited statistics-library milestone:
+Complete Phase 6 with a limited scientific-validation milestone:
 
-- implement percentile bootstrap for the independent difference in medians B minus A
-- reuse the established bounded replication, confidence-level and seed contracts
-- validate the median estimate, interval and reproducibility without adding API or frontend integration in the same increment
+- add seeded empirical coverage checks for the mean percentile-bootstrap interval
+- verify permutation false-positive control and directional power with bounded replications
+- verify improved resampling stability with larger replication counts without adding API or frontend integration in the same increment

@@ -2,6 +2,7 @@
 
 from experiment_os_stats.analyses import (
     bootstrap_mean_difference,
+    bootstrap_median_difference,
     fisher_exact_test,
     mann_whitney_u_test,
     permutation_mean_test,
@@ -100,6 +101,7 @@ __all__ = [
     "WarningSeverity",
     "binary_rate_plot_data",
     "bootstrap_mean_difference",
+    "bootstrap_median_difference",
     "continuous_distribution_plot_data",
     "fisher_exact_test",
     "mann_whitney_u_test",
