@@ -150,4 +150,133 @@ describe("App", () => {
     expect(screen.getByLabelText("Test")).toHaveValue("fisher-exact");
     expect(screen.getByLabelText("Alternative")).toHaveValue("greater");
   });
+
+  it("previews, maps and analyzes an imported continuous CSV", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          filename: "experiment.csv",
+          size_bytes: 42,
+          delimiter: ",",
+          row_count: 4,
+          columns: [
+            { name: "variant", inferred_type: "string", missing_count: 0 },
+            { name: "revenue", inferred_type: "number", missing_count: 1 }
+          ],
+          preview_rows: [
+            { variant: "control", revenue: 10 },
+            { variant: "treatment", revenue: 12 }
+          ]
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          metric_type: "continuous",
+          group_a: [10],
+          group_b: [12, 13],
+          metadata: {
+            source: "csv_import",
+            filename: "experiment.csv",
+            original_rows: 4,
+            retained_rows: 3,
+            excluded_rows: 1,
+            exclusion_reasons: { missing_metric: 1 },
+            validation: {
+              group_a: { valid_size: 1 },
+              group_b: { valid_size: 2 }
+            }
+          }
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          metric_type: "continuous",
+          group_a: { n: 1, mean: 10, median: 10, standard_deviation: 0, standard_error: 0, iqr: 0 },
+          group_b: { n: 2, mean: 12.5, median: 12.5, standard_deviation: 0.707, standard_error: 0.5, iqr: 0.5 },
+          comparison: { mean_difference: 2.5, median_difference: 2.5, mean_ratio: 1.25 }
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          histograms: {
+            A: { bin_edges: [9, 11], counts: [1] },
+            B: { bin_edges: [12, 14], counts: [2] }
+          },
+          boxplots: {
+            A: { minimum: 10, q1: 10, median: 10, q3: 10, maximum: 10 },
+            B: { minimum: 12, q1: 12.25, median: 12.5, q3: 12.75, maximum: 13 }
+          },
+          qq_plots: {
+            A: { theoretical_quantiles: [0], sample_quantiles: [10] },
+            B: { theoretical_quantiles: [-0.5, 0.5], sample_quantiles: [12, 13] }
+          }
+        })
+      });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Import CSV" }));
+    const file = new File(["variant,revenue\ncontrol,10\ntreatment,12"], "experiment.csv", { type: "text/csv" });
+    fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview CSV" }));
+
+    await screen.findByRole("heading", { name: "experiment.csv" });
+    expect(screen.getByText((_, element) => element?.textContent === "revenue number, 1 missing")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Group A value"), { target: { value: "control" } });
+    fireEvent.change(screen.getByLabelText("Group B value"), { target: { value: "treatment" } });
+    fireEvent.click(screen.getByRole("button", { name: "Validate dataset" }));
+
+    await screen.findByRole("heading", { name: "Imported dataset" });
+    expect(screen.getByRole("heading", { name: "Import validation" })).toBeInTheDocument();
+    expect(screen.getByText("Group B retained").nextElementSibling).toHaveTextContent("2");
+    expect(screen.getByText("missing metric: 1")).toBeInTheDocument();
+    expect(globalThis.fetch).toHaveBeenNthCalledWith(
+      1,
+      "/api/v1/datasets/preview",
+      expect.objectContaining({ method: "POST", body: expect.any(FormData) })
+    );
+    expect(globalThis.fetch).toHaveBeenNthCalledWith(
+      2,
+      "/api/v1/datasets/validate",
+      expect.objectContaining({ method: "POST", body: expect.any(FormData) })
+    );
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/descriptive/continuous",
+      expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("shows explicit success and failure mapping for binary CSV metrics", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        filename: "conversion.csv",
+        size_bytes: 30,
+        delimiter: ";",
+        row_count: 2,
+        columns: [
+          { name: "arm", inferred_type: "string", missing_count: 0 },
+          { name: "converted", inferred_type: "string", missing_count: 0 }
+        ],
+        preview_rows: [{ arm: "A", converted: "yes" }]
+      })
+    });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Import CSV" }));
+    fireEvent.change(screen.getByLabelText("CSV file"), {
+      target: { files: [new File(["arm;converted\nA;yes"], "conversion.csv", { type: "text/csv" })] }
+    });
+    fireEvent.change(screen.getByLabelText("Delimiter"), { target: { value: ";" } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview CSV" }));
+
+    await screen.findByRole("heading", { name: "conversion.csv" });
+    fireEvent.change(screen.getByLabelText("Metric type"), { target: { value: "binary" } });
+
+    expect(screen.getByLabelText("Success value (1)")).toBeRequired();
+    expect(screen.getByLabelText("Failure value (0)")).toBeRequired();
+  });
 });

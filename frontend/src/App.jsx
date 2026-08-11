@@ -5,6 +5,7 @@ import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/
 import { fetchBinaryDiagnostics, fetchContinuousDiagnostics } from "./api/diagnostics.js";
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
 import AnalysisResult from "./components/AnalysisResult.jsx";
+import CsvImportPanel from "./components/CsvImportPanel.jsx";
 import DiagnosticCharts from "./components/DiagnosticCharts.jsx";
 import { downloadCsv, simulationToCsv } from "./lib/csv.js";
 
@@ -38,6 +39,7 @@ const initialBinaryAnalysis = {
 };
 
 export default function App() {
+  const [source, setSource] = useState("simulation");
   const [mode, setMode] = useState("binary");
   const [binaryForm, setBinaryForm] = useState(initialBinaryForm);
   const [continuousForm, setContinuousForm] = useState(initialContinuousForm);
@@ -52,6 +54,33 @@ export default function App() {
   const activeForm = mode === "binary" ? binaryForm : continuousForm;
   const previewRows = useMemo(() => buildPreviewRows(result), [result]);
 
+  function resetResults() {
+    setResult(null);
+    setDescriptiveSummary(null);
+    setDiagnostics(null);
+    setAnalysisResult(null);
+    setError("");
+    setStatus("idle");
+  }
+
+  async function processDataset(payload) {
+    const [summary, diagnosticData, statisticalAnalysis] = await Promise.all(
+      payload.metric_type === "binary"
+        ? [
+            summarizeBinaryExperiment(payload),
+            fetchBinaryDiagnostics(payload),
+            analyzeBinaryExperiment(payload, binaryAnalysis)
+          ]
+        : [summarizeContinuousExperiment(payload), fetchContinuousDiagnostics(payload), null]
+    );
+    setMode(payload.metric_type);
+    setResult(payload);
+    setDescriptiveSummary(summary);
+    setDiagnostics(diagnosticData);
+    setAnalysisResult(statisticalAnalysis);
+    setStatus("success");
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
     setStatus("loading");
@@ -62,20 +91,7 @@ export default function App() {
         mode === "binary"
           ? await simulateBinaryExperiment(binaryForm)
           : await simulateContinuousExperiment(continuousForm);
-      const [summary, diagnosticData, statisticalAnalysis] = await Promise.all(
-        mode === "binary"
-          ? [
-              summarizeBinaryExperiment(payload),
-              fetchBinaryDiagnostics(payload),
-              analyzeBinaryExperiment(payload, binaryAnalysis)
-            ]
-          : [summarizeContinuousExperiment(payload), fetchContinuousDiagnostics(payload), null]
-      );
-      setResult(payload);
-      setDescriptiveSummary(summary);
-      setDiagnostics(diagnosticData);
-      setAnalysisResult(statisticalAnalysis);
-      setStatus("success");
+      await processDataset(payload);
     } catch (caughtError) {
       setResult(null);
       setDescriptiveSummary(null);
@@ -83,6 +99,19 @@ export default function App() {
       setAnalysisResult(null);
       setError(caughtError.message);
       setStatus("error");
+    }
+  }
+
+  async function handleImportedDataset(payload) {
+    setStatus("loading");
+    setError("");
+    try {
+      await processDataset(payload);
+    } catch (caughtError) {
+      resetResults();
+      setError(caughtError.message);
+      setStatus("error");
+      throw caughtError;
     }
   }
 
@@ -100,75 +129,70 @@ export default function App() {
         <div className="page-heading">
           <div>
             <p className="eyebrow">ExperimentOS</p>
-            <h1 id="page-title">Simulation workspace</h1>
+            <h1 id="page-title">Experiment workspace</h1>
           </div>
-          <div className="mode-toggle" aria-label="Metric type">
+          <div className="mode-toggle" aria-label="Data source">
             <button
-              className={mode === "binary" ? "active" : ""}
+              className={source === "simulation" ? "active" : ""}
               type="button"
               onClick={() => {
-                setMode("binary");
-                setResult(null);
-                setDescriptiveSummary(null);
-                setDiagnostics(null);
-                setAnalysisResult(null);
+                setSource("simulation");
+                resetResults();
               }}
             >
-              Binary
+              Simulate
             </button>
             <button
-              className={mode === "continuous" ? "active" : ""}
+              className={source === "csv" ? "active" : ""}
               type="button"
               onClick={() => {
-                setMode("continuous");
-                setResult(null);
-                setDescriptiveSummary(null);
-                setDiagnostics(null);
-                setAnalysisResult(null);
+                setSource("csv");
+                resetResults();
               }}
             >
-              Continuous
+              Import CSV
             </button>
           </div>
         </div>
 
         <div className="content-grid">
-          <form className="tool-panel" onSubmit={handleSubmit}>
-            {mode === "binary" ? (
-              <BinaryFields
-                form={binaryForm}
-                onChange={setBinaryForm}
-                analysis={binaryAnalysis}
-                onAnalysisChange={setBinaryAnalysis}
-              />
-            ) : (
-              <ContinuousFields form={continuousForm} onChange={setContinuousForm} />
-            )}
-
-            <button className="primary-action" type="submit" disabled={status === "loading"}>
-              {status === "loading" ? "Running..." : "Run simulation"}
-            </button>
-          </form>
+          {source === "simulation" ? (
+            <form className="tool-panel" onSubmit={handleSubmit}>
+              <div className="metric-toggle" aria-label="Metric type">
+                <button className={mode === "binary" ? "active" : ""} type="button" onClick={() => { setMode("binary"); resetResults(); }}>Binary</button>
+                <button className={mode === "continuous" ? "active" : ""} type="button" onClick={() => { setMode("continuous"); resetResults(); }}>Continuous</button>
+              </div>
+              {mode === "binary" ? (
+                <BinaryFields form={binaryForm} onChange={setBinaryForm} analysis={binaryAnalysis} onAnalysisChange={setBinaryAnalysis} />
+              ) : (
+                <ContinuousFields form={continuousForm} onChange={setContinuousForm} />
+              )}
+              <button className="primary-action" type="submit" disabled={status === "loading"}>{status === "loading" ? "Running..." : "Run simulation"}</button>
+            </form>
+          ) : (
+            <CsvImportPanel onValidated={handleImportedDataset} />
+          )}
 
           <section className="result-panel" aria-label="Simulation result">
             {status === "error" ? <p className="error-message">{error}</p> : null}
             {!result ? (
               <div className="empty-state">
-                <h2>Dataset preview</h2>
-                <p>Run a simulation to inspect the first rows and download the generated data.</p>
+                <h2>Dataset results</h2>
+                <p>{source === "simulation" ? "Run a simulation to inspect and analyze the generated data." : "Preview and map a CSV to analyze the retained observations."}</p>
               </div>
             ) : (
               <>
                 <div className="result-header">
                   <div>
                     <p className="eyebrow">{result.metric_type}</p>
-                    <h2>Generated dataset</h2>
+                    <h2>{source === "simulation" ? "Generated dataset" : "Imported dataset"}</h2>
                   </div>
                   <button type="button" className="secondary-action" onClick={handleDownload}>
                     Download CSV
                   </button>
                 </div>
                 <MetadataGrid metadata={result.metadata} />
+                {result.metadata?.source === "csv_import" ? <ImportSummary metadata={result.metadata} /> : null}
                 {descriptiveSummary ? <DescriptiveSummary summary={descriptiveSummary} /> : null}
                 {analysisResult ? <AnalysisResult result={analysisResult} /> : null}
                 {diagnostics ? (
@@ -180,9 +204,7 @@ export default function App() {
           </section>
         </div>
 
-        <p className="footer-note">
-          Current parameters: {Object.entries(activeForm).length} fields configured locally.
-        </p>
+        <p className="footer-note">No uploaded data is stored. {source === "simulation" ? `${Object.entries(activeForm).length} parameters are configured locally.` : "CSV processing remains in memory for this session."}</p>
       </section>
     </main>
   );
@@ -283,7 +305,7 @@ function NumberField({ label, name, value, onChange, step = "1" }) {
 }
 
 function MetadataGrid({ metadata }) {
-  const entries = Object.entries(metadata).filter(([, value]) => value !== null);
+  const entries = Object.entries(metadata).filter(([, value]) => value !== null && typeof value !== "object");
 
   return (
     <dl className="metadata-grid">
@@ -294,6 +316,21 @@ function MetadataGrid({ metadata }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+function ImportSummary({ metadata }) {
+  const exclusions = Object.entries(metadata.exclusion_reasons ?? {}).filter(([, count]) => count > 0);
+  return (
+    <section className="import-summary" aria-label="Import validation summary">
+      <h3>Import validation</h3>
+      <dl>
+        <div><dt>Group A retained</dt><dd>{metadata.validation?.group_a?.valid_size ?? 0}</dd></div>
+        <div><dt>Group B retained</dt><dd>{metadata.validation?.group_b?.valid_size ?? 0}</dd></div>
+        <div><dt>Rows excluded</dt><dd>{metadata.excluded_rows}</dd></div>
+      </dl>
+      {exclusions.length ? <p>{exclusions.map(([reason, count]) => `${reason.replaceAll("_", " ")}: ${count}`).join(" · ")}</p> : <p>No rows were excluded.</p>}
+    </section>
   );
 }
 

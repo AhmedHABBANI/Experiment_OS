@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 7 - Secure CSV preview and manual mapping completed
+Phase 7 - CSV import completed end to end
 
 ## Completed
 
@@ -232,8 +232,33 @@ Phase 7 - Secure CSV preview and manual mapping completed
 - Normalized dataset metadata includes source, mapping, retained rows and exclusions
 - Shared bounded CSV parsing reused by preview and validation endpoints
 - Final A/B arrays validated through `experiment_os_stats`
+- Frontend data-source selector implemented for simulation and CSV import
+- Frontend multipart clients implemented for CSV preview and validation
+- CSV file and delimiter controls implemented
+- CSV preview table displays inferred types and missing-value counts
+- Manual group-column, A/B modality, metric-column and metric-type controls implemented
+- Binary success and failure mapping controls implemented
+- Imported normalized datasets reuse the existing descriptive, diagnostic and binary-analysis pipeline
+- Import validation summary displays retained A/B observations and exclusion reasons
+- Uploaded data remains in memory and is never persisted by the frontend
 
 ## Validation
+
+- Frontend CSV-import initial `npm.cmd run lint --prefix frontend`: passed
+- First sandboxed frontend test/build attempt: blocked before config loading by Windows parent-directory access restrictions
+- Frontend CSV-import initial tests rerun outside the sandbox: passed, 3 files and 5 tests
+- Frontend CSV-import initial build rerun outside the sandbox: passed with the existing Plotly bundle-size warning
+- First CSV-import integration test run: 5 tests passed and 1 assertion failed because nested column text was not contiguous
+- Second CSV-import integration test run exposed an incomplete diagnostics fixture; the fixture was aligned with the existing API contract
+- Final `npm.cmd run lint --prefix frontend`: passed
+- Final `npm.cmd run test --prefix frontend -- --run`: passed, 3 files and 7 tests
+- Final `npm.cmd run build --prefix frontend`: passed; bundle remains about 5.1 MB before gzip because of Plotly
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 73 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final Docker `pytest`: passed, 297 tests
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 297 tests, 99.29% `experiment_os_stats` coverage
+- Local Vite server started on `127.0.0.1:5176`; HTTP verification returned 200
+- Browser visual verification was not executed because the in-app browser execution tool was unavailable in this session
 
 - CSV-mapping initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 72 files already formatted
 - CSV-mapping initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -562,16 +587,18 @@ Phase 7 - Secure CSV preview and manual mapping completed
 - `backend/app/services/dataset_service.py`
 - `backend/tests/test_csv_preview.py`
 - `backend/tests/test_csv_mapping.py`
+- `frontend/src/api/datasets.js`
+- `frontend/src/components/CsvImportPanel.jsx`
 
 ## Current milestone status
 
-- Phase 7 second backend milestone completed: manual CSV mapping and normalized in-memory A/B datasets
+- Phase 7 completed: secure CSV upload, preview, mapping, normalization and frontend analysis integration
 
 ## Next milestone
 
-Continue Phase 7 with a limited frontend CSV-import milestone:
+Start Phase 8 with a limited deterministic-interpretation foundation milestone:
 
-- add CSV file selection and delimiter controls to the existing frontend workflow
-- display the backend preview and expose manual group, modality and metric mapping controls
-- call the validation endpoint and display retained/excluded row summaries
-- reuse the normalized A/B dataset in the existing descriptive and analysis workflow without browser-side statistical calculations
+- define a stable structured interpretation contract in `experiment_os_stats`
+- implement deterministic decision, effect and uncertainty wording for one existing test family
+- explicitly avoid claims that the null hypothesis is true
+- add focused unit tests for p-values above and below alpha and confidence intervals crossing zero

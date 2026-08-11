@@ -78,7 +78,8 @@ h4 {
   font-size: 0.95rem;
 }
 
-.mode-toggle {
+.mode-toggle,
+.metric-toggle {
   display: inline-grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
@@ -87,7 +88,8 @@ h4 {
   background: #ffffff;
 }
 
-.mode-toggle button {
+.mode-toggle button,
+.metric-toggle button {
   min-width: 120px;
   border: 0;
   border-right: 1px solid #b8c5cb;
@@ -96,13 +98,83 @@ h4 {
   color: #293943;
 }
 
-.mode-toggle button:last-child {
+.mode-toggle button:last-child,
+.metric-toggle button:last-child {
   border-right: 0;
 }
 
-.mode-toggle .active {
+.mode-toggle .active,
+.metric-toggle .active {
   background: #12313d;
   color: #ffffff;
+}
+
+.metric-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 4px;
+}
+
+.csv-import {
+  display: grid;
+  gap: 14px;
+}
+
+.csv-preview,
+.mapping-panel {
+  border: 1px solid #ccd6db;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.mapping-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.column-summary {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+  color: #52636d;
+  font-size: 0.78rem;
+}
+
+.import-summary {
+  margin-bottom: 16px;
+  border: 1px solid #9bb8a4;
+  border-radius: 6px;
+  background: #f1f8f3;
+  padding: 12px;
+}
+
+.import-summary dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.import-summary dt {
+  color: #52636d;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.import-summary dd {
+  margin: 2px 0 0;
+  font-weight: 800;
+}
+
+.import-summary p {
+  margin: 10px 0 0;
+  color: #40515b;
+  font-size: 0.8rem;
 }
 
 .content-grid {
@@ -473,6 +545,10 @@ button:focus {
   }
 
   .analysis-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .import-summary dl {
     grid-template-columns: 1fr;
   }
 }
