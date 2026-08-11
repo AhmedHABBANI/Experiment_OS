@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 7 - Secure in-memory CSV preview completed
+Phase 7 - Secure CSV preview and manual mapping completed
 
 ## Completed
 
@@ -223,8 +223,26 @@ Phase 7 - Secure in-memory CSV preview completed
 - Dataset upload errors return stable codes, safe messages and controlled details
 - CSV preview validated for comma, semicolon, tab, BOM and missing values
 - Backend Docker image validated with multipart support
+- `POST /api/v1/datasets/validate` implemented for manual CSV mapping
+- Group column and distinct A/B modality mapping implemented
+- Continuous metric conversion implemented with non-finite and invalid-value exclusion
+- Binary success/failure modality mapping implemented case-insensitively
+- CSV rows normalized to validated in-memory A/B arrays
+- Missing groups, unmapped groups, missing metrics and invalid metrics counted separately
+- Normalized dataset metadata includes source, mapping, retained rows and exclusions
+- Shared bounded CSV parsing reused by preview and validation endpoints
+- Final A/B arrays validated through `experiment_os_stats`
 
 ## Validation
+
+- CSV-mapping initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 72 files already formatted
+- CSV-mapping initial `.\.venv\Scripts\ruff.exe check .`: passed
+- CSV-mapping initial Docker validation: passed, 287 tests, 99.29% `experiment_os_stats` coverage
+- Targeted CSV preview and mapping API validation: passed, 21 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 73 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final Docker `pytest`: passed, 297 tests
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 297 tests, 99.29% `experiment_os_stats` coverage
 
 - CSV-preview initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 68 files already formatted
 - CSV-preview initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -543,15 +561,17 @@ Phase 7 - Secure in-memory CSV preview completed
 - `backend/app/schemas/datasets.py`
 - `backend/app/services/dataset_service.py`
 - `backend/tests/test_csv_preview.py`
+- `backend/tests/test_csv_mapping.py`
 
 ## Current milestone status
 
-- Phase 7 first backend milestone completed: secure in-memory CSV parsing and preview
+- Phase 7 second backend milestone completed: manual CSV mapping and normalized in-memory A/B datasets
 
 ## Next milestone
 
-Continue Phase 7 with a limited CSV-mapping milestone:
+Continue Phase 7 with a limited frontend CSV-import milestone:
 
-- implement manual group-column, A-value, B-value and metric-column mapping
-- support continuous metric conversion and binary success/failure mapping
-- return a normalized in-memory A/B dataset with retained/excluded row counts without adding frontend integration in the same increment
+- add CSV file selection and delimiter controls to the existing frontend workflow
+- display the backend preview and expose manual group, modality and metric mapping controls
+- call the validation endpoint and display retained/excluded row summaries
+- reuse the normalized A/B dataset in the existing descriptive and analysis workflow without browser-side statistical calculations

@@ -4,15 +4,23 @@ import csv
 import json
 import os
 import re
+from dataclasses import dataclass
 from io import StringIO
+from math import isfinite
 from pathlib import PurePath
+from typing import Any
 
 import pandas as pd
 from pandas.api.types import is_bool_dtype, is_numeric_dtype
 from pandas.errors import EmptyDataError, ParserError
 
 from app.errors import DatasetUploadError
-from app.schemas.datasets import CSVColumnPreview, CSVPreviewResponse
+from app.schemas.datasets import (
+    CSVColumnPreview,
+    CSVPreviewResponse,
+    NormalizedDatasetResponse,
+)
+from experiment_os_stats import DataSource, MetricType, validate_ab_samples
 
 DEFAULT_MAX_CSV_BYTES = 5 * 1024 * 1024
 PREVIEW_ROW_LIMIT = 10
@@ -24,6 +32,16 @@ ALLOWED_CONTENT_TYPES = {
     "text/csv",
     "text/plain",
 }
+
+
+@dataclass(frozen=True, slots=True)
+class ParsedCSV:
+    """Validated CSV content retained only for the current request."""
+
+    filename: str
+    size_bytes: int
+    delimiter: str
+    dataframe: pd.DataFrame
 
 
 def get_max_csv_bytes() -> int:
@@ -123,15 +141,15 @@ def _infer_column_type(series: pd.Series) -> str:
     return "string"
 
 
-def parse_csv_preview(
+def _parse_csv(
     content: bytes,
     *,
     filename: str | None,
     content_type: str | None,
-    delimiter: str | None = None,
-    max_bytes: int | None = None,
-) -> CSVPreviewResponse:
-    """Validate and parse CSV bytes into a safe, JSON-compatible preview."""
+    delimiter: str | None,
+    max_bytes: int | None,
+) -> ParsedCSV:
+    """Validate CSV bytes and return an in-memory dataframe."""
     safe_filename = sanitize_csv_filename(filename)
     _validate_content_type(content_type)
     effective_limit = max_bytes if max_bytes is not None else get_max_csv_bytes()
@@ -169,6 +187,32 @@ def parse_csv_preview(
             "EMPTY_DATASET",
             "The uploaded CSV must contain at least one data row.",
         )
+    dataframe.columns = [str(name).strip() for name in dataframe.columns]
+    return ParsedCSV(
+        filename=safe_filename,
+        size_bytes=size_bytes,
+        delimiter=selected_delimiter,
+        dataframe=dataframe,
+    )
+
+
+def parse_csv_preview(
+    content: bytes,
+    *,
+    filename: str | None,
+    content_type: str | None,
+    delimiter: str | None = None,
+    max_bytes: int | None = None,
+) -> CSVPreviewResponse:
+    """Validate and parse CSV bytes into a safe, JSON-compatible preview."""
+    parsed = _parse_csv(
+        content,
+        filename=filename,
+        content_type=content_type,
+        delimiter=delimiter,
+        max_bytes=max_bytes,
+    )
+    dataframe = parsed.dataframe
 
     columns = [
         CSVColumnPreview(
@@ -183,10 +227,211 @@ def parse_csv_preview(
     )
 
     return CSVPreviewResponse(
-        filename=safe_filename,
-        size_bytes=size_bytes,
-        delimiter=selected_delimiter,
+        filename=parsed.filename,
+        size_bytes=parsed.size_bytes,
+        delimiter=parsed.delimiter,
         row_count=int(dataframe.shape[0]),
         columns=columns,
         preview_rows=preview_rows,
+    )
+
+
+def _value_token(value: Any) -> str | None:
+    """Normalize a CSV scalar for stable manual modality matching."""
+    if pd.isna(value):
+        return None
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, float):
+        return str(int(value)) if value.is_integer() else format(value, ".15g")
+    token = str(value).strip()
+    return token or None
+
+
+def _validate_mapping_columns(
+    dataframe: pd.DataFrame,
+    *,
+    group_column: str,
+    metric_column: str,
+) -> tuple[str, str]:
+    """Validate and normalize selected group and metric column names."""
+    normalized_group_column = group_column.strip()
+    normalized_metric_column = metric_column.strip()
+    missing = [
+        name
+        for name in (normalized_group_column, normalized_metric_column)
+        if name not in dataframe.columns
+    ]
+    if missing:
+        raise DatasetUploadError(
+            "MISSING_COLUMNS",
+            "One or more mapped CSV columns do not exist.",
+            details={"missing_columns": missing, "available_columns": list(dataframe.columns)},
+        )
+    if normalized_group_column == normalized_metric_column:
+        raise DatasetUploadError(
+            "INVALID_MAPPING",
+            "The group and metric columns must be different.",
+        )
+    return normalized_group_column, normalized_metric_column
+
+
+def _normalize_metric_type(metric_type: str) -> MetricType:
+    """Normalize a mapped metric type or raise a safe dataset error."""
+    try:
+        return MetricType(metric_type)
+    except ValueError as error:
+        raise DatasetUploadError(
+            "INVALID_METRIC_TYPE",
+            "The metric type must be binary or continuous.",
+            details={"metric_type": metric_type},
+        ) from error
+
+
+def normalize_csv_dataset(
+    content: bytes,
+    *,
+    filename: str | None,
+    content_type: str | None,
+    group_column: str,
+    group_a_value: str,
+    group_b_value: str,
+    metric_column: str,
+    metric_type: str,
+    binary_success_value: str | None = None,
+    binary_failure_value: str | None = None,
+    delimiter: str | None = None,
+    max_bytes: int | None = None,
+) -> NormalizedDatasetResponse:
+    """Map an uploaded CSV to validated in-memory A/B metric arrays."""
+    parsed = _parse_csv(
+        content,
+        filename=filename,
+        content_type=content_type,
+        delimiter=delimiter,
+        max_bytes=max_bytes,
+    )
+    dataframe = parsed.dataframe
+    selected_group_column, selected_metric_column = _validate_mapping_columns(
+        dataframe,
+        group_column=group_column,
+        metric_column=metric_column,
+    )
+    normalized_metric_type = _normalize_metric_type(metric_type)
+    group_a_token = _value_token(group_a_value)
+    group_b_token = _value_token(group_b_value)
+    if group_a_token is None or group_b_token is None or group_a_token == group_b_token:
+        raise DatasetUploadError(
+            "INVALID_GROUP_MAPPING",
+            "Group A and B values must be distinct and non-empty.",
+        )
+
+    success_token: str | None = None
+    failure_token: str | None = None
+    if normalized_metric_type is MetricType.BINARY:
+        success_token = _value_token(binary_success_value)
+        failure_token = _value_token(binary_failure_value)
+        if success_token is None or failure_token is None or success_token == failure_token:
+            raise DatasetUploadError(
+                "INVALID_BINARY_MAPPING",
+                "Binary success and failure values must be distinct and non-empty.",
+            )
+        success_token = success_token.casefold()
+        failure_token = failure_token.casefold()
+
+    group_a: list[float] = []
+    group_b: list[float] = []
+    exclusions = {
+        "missing_group": 0,
+        "unmapped_group": 0,
+        "missing_metric": 0,
+        "invalid_metric": 0,
+    }
+    for group_value, metric_value in zip(
+        dataframe[selected_group_column],
+        dataframe[selected_metric_column],
+        strict=True,
+    ):
+        group_token = _value_token(group_value)
+        if group_token is None:
+            exclusions["missing_group"] += 1
+            continue
+        if group_token not in (group_a_token, group_b_token):
+            exclusions["unmapped_group"] += 1
+            continue
+
+        metric_token = _value_token(metric_value)
+        if metric_token is None:
+            exclusions["missing_metric"] += 1
+            continue
+        if normalized_metric_type is MetricType.BINARY:
+            binary_token = metric_token.casefold()
+            if binary_token == success_token:
+                normalized_value = 1.0
+            elif binary_token == failure_token:
+                normalized_value = 0.0
+            else:
+                exclusions["invalid_metric"] += 1
+                continue
+        else:
+            if isinstance(metric_value, bool):
+                exclusions["invalid_metric"] += 1
+                continue
+            try:
+                normalized_value = float(metric_value)
+            except (TypeError, ValueError):
+                exclusions["invalid_metric"] += 1
+                continue
+            if not isfinite(normalized_value):
+                exclusions["invalid_metric"] += 1
+                continue
+
+        target = group_a if group_token == group_a_token else group_b
+        target.append(normalized_value)
+
+    if not group_a or not group_b:
+        raise DatasetUploadError(
+            "INSUFFICIENT_GROUP_DATA",
+            "Both mapped groups must retain at least one valid metric observation.",
+            details={"retained_a": len(group_a), "retained_b": len(group_b)},
+        )
+
+    validated = validate_ab_samples(
+        group_a,
+        group_b,
+        metric_type=normalized_metric_type,
+        minimum_size=1,
+    )
+    normalized_a = [float(value) for value in validated.group_a.values]
+    normalized_b = [float(value) for value in validated.group_b.values]
+    excluded_rows = sum(exclusions.values())
+
+    return NormalizedDatasetResponse(
+        metric_type=normalized_metric_type.value,
+        group_a=normalized_a,
+        group_b=normalized_b,
+        metadata={
+            "source": DataSource.CSV_IMPORT.value,
+            "filename": parsed.filename,
+            "delimiter": parsed.delimiter,
+            "original_rows": int(dataframe.shape[0]),
+            "retained_rows": len(normalized_a) + len(normalized_b),
+            "excluded_rows": excluded_rows,
+            "exclusion_reasons": exclusions,
+            "mapping": {
+                "group_column": selected_group_column,
+                "group_a_value": group_a_token,
+                "group_b_value": group_b_token,
+                "metric_column": selected_metric_column,
+                "metric_type": normalized_metric_type.value,
+                "binary_success_value": success_token,
+                "binary_failure_value": failure_token,
+            },
+            "validation": {
+                "group_a": validated.group_a.summary.to_dict(),
+                "group_b": validated.group_b.summary.to_dict(),
+            },
+        },
     )

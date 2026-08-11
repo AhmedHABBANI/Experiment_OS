@@ -22,3 +22,12 @@ class CSVPreviewResponse(BaseModel):
     row_count: int = Field(ge=1)
     columns: list[CSVColumnPreview]
     preview_rows: list[dict[str, Any]]
+
+
+class NormalizedDatasetResponse(BaseModel):
+    """Normalized in-memory A/B dataset produced from a mapped CSV."""
+
+    metric_type: Literal["binary", "continuous"]
+    group_a: list[float]
+    group_b: list[float]
+    metadata: dict[str, Any]
