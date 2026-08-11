@@ -1,5 +1,10 @@
 """Deterministic wording for independent binary A/B analyses."""
 
+from experiment_os_stats.interpretation._common import (
+    decision_message,
+    practical_significance_message,
+    warning_context,
+)
 from experiment_os_stats.results import (
     ConfidenceInterval,
     StatisticalInterpretation,
@@ -18,19 +23,6 @@ def _alternative_hypothesis(alternative: Alternative, *, fisher: bool) -> str:
     direction = "greater" if alternative is Alternative.GREATER else "less"
     quantity = "odds of success" if fisher else "population proportion"
     return f"The {quantity} in group B is {direction} than in group A."
-
-
-def _decision_message(*, reject_null: bool, alpha: float) -> str:
-    threshold = f"{alpha:.3g}"
-    if reject_null:
-        return (
-            "The data provide sufficient evidence to reject the null hypothesis "
-            f"at alpha = {threshold}."
-        )
-    return (
-        "The data do not provide sufficient evidence to reject the null hypothesis "
-        f"at alpha = {threshold}; this does not establish that the null hypothesis is true."
-    )
 
 
 def _effect_message(estimate: float) -> str:
@@ -80,12 +72,6 @@ def interpret_binary_result(
 ) -> StatisticalInterpretation:
     """Build a stable, cautious interpretation for a binary A/B test result."""
     fisher = test_name == "fisher_exact_test"
-    warning_context = (
-        "Review the analysis warnings before relying on this conclusion: "
-        + "; ".join(warning.message for warning in warnings)
-        if warnings
-        else None
-    )
     return StatisticalInterpretation(
         question="Do the binary success rates differ between independent groups A and B?",
         null_hypothesis=(
@@ -94,12 +80,9 @@ def interpret_binary_result(
             else "The population proportions in groups A and B are equal."
         ),
         alternative_hypothesis=_alternative_hypothesis(alternative, fisher=fisher),
-        decision=_decision_message(reject_null=p_value < alpha, alpha=alpha),
+        decision=decision_message(reject_null=p_value < alpha, alpha=alpha),
         effect=_effect_message(estimate),
         uncertainty=_uncertainty_message(confidence_interval),
-        practical_significance=(
-            "Practical significance was not assessed because no practical-effect "
-            "threshold was provided."
-        ),
-        warning_context=warning_context,
+        practical_significance=practical_significance_message(),
+        warning_context=warning_context(warnings),
     )

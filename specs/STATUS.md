@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 8 - Deterministic binary interpretation foundation completed
+Phase 8 - Deterministic binary and parametric continuous interpretation completed
 
 ## Completed
 
@@ -253,8 +253,26 @@ Phase 8 - Deterministic binary interpretation foundation completed
 - Practical significance remains explicitly unassessed when no practical threshold is provided
 - Statistical warnings are contextualized in the deterministic interpretation
 - Directional alternatives generate matching greater-than or less-than hypotheses
+- Shared deterministic decision, practical-significance and warning wording extracted
+- Deterministic Student t-test interpretation implemented
+- Deterministic Welch t-test interpretation implemented
+- Continuous effects consistently describe the observed mean difference as B minus A
+- Cohen's d reported numerically without automatic small, medium or large labels
+- Continuous uncertainty wording contextualizes intervals above, below or crossing zero
+- Continuous non-rejection wording explicitly avoids accepting the null hypothesis
+- Sample-size imbalance and IQR outlier warnings contextualized in interpretations
+- Directional Student and Welch alternatives generate matching hypotheses
 
 ## Validation
+
+- Phase 8 continuous-interpretation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 76 files already formatted
+- Phase 8 continuous-interpretation initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 8 continuous-interpretation initial Docker validation: passed, 307 tests, 99.16% `experiment_os_stats` coverage
+- Targeted Student, Welch, warning and continuous-interpretation validation: passed, 44 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 79 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final Docker `pytest`: passed, 316 tests
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 316 tests, 99.20% `experiment_os_stats` coverage
 
 - Phase 8 binary-interpretation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 73 files already formatted
 - Phase 8 binary-interpretation initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -613,16 +631,19 @@ Phase 8 - Deterministic binary interpretation foundation completed
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/__init__.py`
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/binary.py`
 - `packages/experiment_os_stats/tests/test_binary_interpretation.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/interpretation/_common.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/interpretation/continuous.py`
+- `packages/experiment_os_stats/tests/test_continuous_interpretation.py`
 
 ## Current milestone status
 
-- Phase 8 first milestone completed: structured deterministic interpretation for binary z and Fisher analyses
+- Phase 8 second milestone completed: structured deterministic interpretation for Student and Welch analyses
 
 ## Next milestone
 
-Continue Phase 8 with a limited continuous parametric interpretation milestone:
+Continue Phase 8 with a limited Mann-Whitney interpretation milestone:
 
-- reuse the structured interpretation contract for Student and Welch tests
-- describe mean differences, confidence intervals and Cohen's d without overstating practical importance
-- contextualize imbalance and outlier warnings
-- cover significant, non-significant, interval-crossing-zero and directional-alternative cases
+- apply the structured interpretation contract to Mann-Whitney
+- describe rank-biserial correlation and probability of superiority without presenting the test as a median test
+- contextualize ties and distribution-shape limitations
+- cover significant, non-significant, directional and tied-data cases

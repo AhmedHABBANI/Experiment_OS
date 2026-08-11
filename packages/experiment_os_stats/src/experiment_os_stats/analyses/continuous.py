@@ -9,6 +9,7 @@ from experiment_os_stats.analyses._common import normalize_alternative, validate
 from experiment_os_stats.data.normalization import SampleLike
 from experiment_os_stats.data.validation import validate_ab_samples
 from experiment_os_stats.exceptions import DegenerateSampleError
+from experiment_os_stats.interpretation import interpret_continuous_parametric_result
 from experiment_os_stats.results import ConfidenceInterval, StatisticalResult, StatisticalWarning
 from experiment_os_stats.types import Alternative, MetricType, MissingValuePolicy, WarningSeverity
 
@@ -144,23 +145,27 @@ def student_t_test(
     standard_error = pooled_standard_deviation * sqrt(1 / n_a + 1 / n_b)
     statistic = difference / standard_error
     critical_value = float(t.ppf(1 - alpha / 2, degrees_of_freedom))
+    p_value = _p_value(statistic, degrees_of_freedom, normalized_alternative)
+    confidence_interval = ConfidenceInterval(
+        lower=difference - critical_value * standard_error,
+        upper=difference + critical_value * standard_error,
+        level=1 - alpha,
+        parameter="difference_in_means_b_minus_a",
+        method="student_t_pooled",
+    )
+    cohens_d = difference / pooled_standard_deviation
+    warnings = _continuous_warnings(values_a, values_b)
 
     return StatisticalResult(
         test_name="student_t_test",
         metric_type=MetricType.CONTINUOUS,
         statistic=float(statistic),
-        p_value=_p_value(statistic, degrees_of_freedom, normalized_alternative),
+        p_value=p_value,
         alpha=alpha,
         alternative=normalized_alternative,
         estimate=difference,
-        confidence_interval=ConfidenceInterval(
-            lower=difference - critical_value * standard_error,
-            upper=difference + critical_value * standard_error,
-            level=1 - alpha,
-            parameter="difference_in_means_b_minus_a",
-            method="student_t_pooled",
-        ),
-        effect_size=difference / pooled_standard_deviation,
+        confidence_interval=confidence_interval,
+        effect_size=cohens_d,
         effect_size_name="cohens_d",
         assumptions=(
             "The two groups contain independent observations.",
@@ -168,18 +173,16 @@ def student_t_test(
             "The population variances are equal.",
             "The group means are approximately normally distributed.",
         ),
-        warnings=_continuous_warnings(values_a, values_b),
-        interpretation={
-            "null_hypothesis": "The population means in groups A and B are equal.",
-            "alternative_hypothesis": (
-                "The population mean in group B differs from group A."
-                if normalized_alternative is Alternative.TWO_SIDED
-                else (
-                    "The population mean in group B is "
-                    f"{normalized_alternative.value} than group A."
-                )
-            ),
-        },
+        warnings=warnings,
+        interpretation=interpret_continuous_parametric_result(
+            estimate=difference,
+            cohens_d=cohens_d,
+            p_value=p_value,
+            alpha=alpha,
+            alternative=normalized_alternative,
+            confidence_interval=confidence_interval,
+            warnings=warnings,
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,
@@ -251,23 +254,27 @@ def welch_t_test(
     statistic = difference / standard_error
     critical_value = float(t.ppf(1 - alpha / 2, degrees_of_freedom))
     pooled_variance = ((n_a - 1) * variance_a + (n_b - 1) * variance_b) / (n_a + n_b - 2)
+    p_value = _p_value(statistic, degrees_of_freedom, normalized_alternative)
+    confidence_interval = ConfidenceInterval(
+        lower=difference - critical_value * standard_error,
+        upper=difference + critical_value * standard_error,
+        level=1 - alpha,
+        parameter="difference_in_means_b_minus_a",
+        method="welch_t",
+    )
+    cohens_d = difference / sqrt(pooled_variance)
+    warnings = _continuous_warnings(values_a, values_b)
 
     return StatisticalResult(
         test_name="welch_t_test",
         metric_type=MetricType.CONTINUOUS,
         statistic=float(statistic),
-        p_value=_p_value(statistic, degrees_of_freedom, normalized_alternative),
+        p_value=p_value,
         alpha=alpha,
         alternative=normalized_alternative,
         estimate=difference,
-        confidence_interval=ConfidenceInterval(
-            lower=difference - critical_value * standard_error,
-            upper=difference + critical_value * standard_error,
-            level=1 - alpha,
-            parameter="difference_in_means_b_minus_a",
-            method="welch_t",
-        ),
-        effect_size=difference / sqrt(pooled_variance),
+        confidence_interval=confidence_interval,
+        effect_size=cohens_d,
         effect_size_name="cohens_d",
         assumptions=(
             "The two groups contain independent observations.",
@@ -275,18 +282,16 @@ def welch_t_test(
             "The group means are approximately normally distributed.",
             "Equal population variances are not assumed.",
         ),
-        warnings=_continuous_warnings(values_a, values_b),
-        interpretation={
-            "null_hypothesis": "The population means in groups A and B are equal.",
-            "alternative_hypothesis": (
-                "The population mean in group B differs from group A."
-                if normalized_alternative is Alternative.TWO_SIDED
-                else (
-                    "The population mean in group B is "
-                    f"{normalized_alternative.value} than group A."
-                )
-            ),
-        },
+        warnings=warnings,
+        interpretation=interpret_continuous_parametric_result(
+            estimate=difference,
+            cohens_d=cohens_d,
+            p_value=p_value,
+            alpha=alpha,
+            alternative=normalized_alternative,
+            confidence_interval=confidence_interval,
+            warnings=warnings,
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,
