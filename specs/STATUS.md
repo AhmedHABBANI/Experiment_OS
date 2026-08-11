@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 6 - Mann-Whitney, permutation and mean/median bootstrap implemented
+Phase 6 - Non-parametric and resampling methods completed
 
 ## Completed
 
@@ -199,8 +199,23 @@ Phase 6 - Mann-Whitney, permutation and mean/median bootstrap implemented
 - Mean and median estimands distinguished explicitly with an extreme-value test
 - Median bootstrap result validated for strict JSON compatibility
 - Bootstrap median difference exported from the public statistics package interface
+- Seeded empirical coverage validation implemented for the mean percentile-bootstrap interval
+- Mean percentile-bootstrap coverage validated on repeated normal A/B samples
+- Seeded false-positive validation implemented for the mean permutation test under the null
+- Seeded directional-power validation implemented for the mean permutation test
+- Permutation p-value stability validated across seeds at 100 versus 1000 permutations
+- Larger permutation counts validated to reduce Monte-Carlo p-value dispersion
+- Phase 6 empirical replication counts bounded to keep the test suite practical
 
 ## Validation
+
+- Phase 6 empirical-validation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 67 files already formatted
+- Phase 6 empirical-validation initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 6 empirical-validation initial Docker validation: passed, 272 tests, 99.29% `experiment_os_stats` coverage
+- Targeted Phase 6 empirical validation: passed, 4 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 68 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 240 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 276 tests, 99.29% `experiment_os_stats` coverage
 
 - Median-bootstrap initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 66 files already formatted
 - Median-bootstrap initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -497,15 +512,16 @@ Phase 6 - Mann-Whitney, permutation and mean/median bootstrap implemented
 - `packages/experiment_os_stats/tests/test_permutation_mean.py`
 - `packages/experiment_os_stats/tests/test_bootstrap_mean.py`
 - `packages/experiment_os_stats/tests/test_bootstrap_median.py`
+- `packages/experiment_os_stats/tests/test_phase6_resampling_validation.py`
 
 ## Current milestone status
 
-- Phase 6 functional methods completed in the statistics library: Mann-Whitney, permutation, and mean/median percentile bootstrap
+- Phase 6 completed in the statistics library: Mann-Whitney, permutation, mean/median percentile bootstrap, references, reproducibility, empirical coverage and stability
 
 ## Next milestone
 
-Complete Phase 6 with a limited scientific-validation milestone:
+Start Phase 7 with a limited CSV-preview milestone:
 
-- add seeded empirical coverage checks for the mean percentile-bootstrap interval
-- verify permutation false-positive control and directional power with bounded replications
-- verify improved resampling stability with larger replication counts without adding API or frontend integration in the same increment
+- implement safe in-memory CSV upload parsing and preview in the backend
+- enforce file-size, extension, filename, encoding and delimiter validation
+- return columns, inferred types, row count, missing counts and preview rows without implementing A/B mapping in the same increment
