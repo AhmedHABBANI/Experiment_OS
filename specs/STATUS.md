@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 6 - Non-parametric and resampling methods completed
+Phase 7 - Secure in-memory CSV preview completed
 
 ## Completed
 
@@ -206,8 +206,34 @@ Phase 6 - Non-parametric and resampling methods completed
 - Permutation p-value stability validated across seeds at 100 versus 1000 permutations
 - Larger permutation counts validated to reduce Monte-Carlo p-value dispersion
 - Phase 6 empirical replication counts bounded to keep the test suite practical
+- `python-multipart` added as the required FastAPI multipart-upload dependency
+- `POST /api/v1/datasets/preview` implemented for in-memory CSV upload preview
+- Configurable CSV size limit implemented through `EXPERIMENTOS_MAX_CSV_BYTES`
+- Upload reading bounded to the configured limit plus one byte
+- CSV extension and compatible content-type validation implemented
+- Uploaded filenames reduced to a sanitized basename before exposure
+- UTF-8 and UTF-8 BOM decoding implemented with structured encoding errors
+- Comma, semicolon, tab and pipe delimiter detection implemented
+- Explicit delimiter selection and validation implemented
+- Empty, missing and duplicate CSV headers rejected safely
+- Empty files and header-only datasets rejected with structured API errors
+- Stable boolean, integer, number and string preview type inference implemented
+- CSV row count, per-column missing counts and first ten preview rows returned
+- Preview rows serialized through pandas without executing uploaded content
+- Dataset upload errors return stable codes, safe messages and controlled details
+- CSV preview validated for comma, semicolon, tab, BOM and missing values
+- Backend Docker image validated with multipart support
 
 ## Validation
+
+- CSV-preview initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 68 files already formatted
+- CSV-preview initial `.\.venv\Scripts\ruff.exe check .`: passed
+- CSV-preview initial Docker validation: passed, 276 tests, 99.29% `experiment_os_stats` coverage
+- Targeted CSV-preview API validation: passed, 11 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 72 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 240 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 python-multipart && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 287 tests, 99.29% `experiment_os_stats` coverage
+- `docker compose build backend`: passed; `python-multipart` installed from the backend project dependency manifest
 
 - Phase 6 empirical-validation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 67 files already formatted
 - Phase 6 empirical-validation initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -513,15 +539,19 @@ Phase 6 - Non-parametric and resampling methods completed
 - `packages/experiment_os_stats/tests/test_bootstrap_mean.py`
 - `packages/experiment_os_stats/tests/test_bootstrap_median.py`
 - `packages/experiment_os_stats/tests/test_phase6_resampling_validation.py`
+- `backend/app/api/v1/datasets.py`
+- `backend/app/schemas/datasets.py`
+- `backend/app/services/dataset_service.py`
+- `backend/tests/test_csv_preview.py`
 
 ## Current milestone status
 
-- Phase 6 completed in the statistics library: Mann-Whitney, permutation, mean/median percentile bootstrap, references, reproducibility, empirical coverage and stability
+- Phase 7 first backend milestone completed: secure in-memory CSV parsing and preview
 
 ## Next milestone
 
-Start Phase 7 with a limited CSV-preview milestone:
+Continue Phase 7 with a limited CSV-mapping milestone:
 
-- implement safe in-memory CSV upload parsing and preview in the backend
-- enforce file-size, extension, filename, encoding and delimiter validation
-- return columns, inferred types, row count, missing counts and preview rows without implementing A/B mapping in the same increment
+- implement manual group-column, A-value, B-value and metric-column mapping
+- support continuous metric conversion and binary success/failure mapping
+- return a normalized in-memory A/B dataset with retained/excluded row counts without adding frontend integration in the same increment

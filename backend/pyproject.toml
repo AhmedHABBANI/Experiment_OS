@@ -11,6 +11,7 @@ requires-python = ">=3.12"
 dependencies = [
     "experiment-os-stats",
     "fastapi>=0.115",
+    "python-multipart>=0.0.18",
     "pydantic>=2.9",
     "uvicorn[standard]>=0.32",
 ]
