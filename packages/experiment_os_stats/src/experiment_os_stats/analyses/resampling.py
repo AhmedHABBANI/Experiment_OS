@@ -6,26 +6,26 @@ from experiment_os_stats.analyses._common import normalize_alternative, validate
 from experiment_os_stats.data.normalization import SampleLike
 from experiment_os_stats.data.validation import validate_ab_samples
 from experiment_os_stats.exceptions import DegenerateSampleError, InvalidParameterError
-from experiment_os_stats.results import StatisticalResult
+from experiment_os_stats.results import ConfidenceInterval, StatisticalResult
 from experiment_os_stats.types import Alternative, MetricType, MissingValuePolicy
 
-_MIN_PERMUTATIONS = 100
-_MAX_PERMUTATIONS = 100_000
+_MIN_RESAMPLES = 100
+_MAX_RESAMPLES = 100_000
 
 
-def _validate_permutation_count(n_permutations: int) -> None:
-    """Validate a bounded Monte-Carlo permutation count."""
+def _validate_resample_count(value: int, *, parameter_name: str) -> None:
+    """Validate a bounded integer resampling count."""
     if (
-        isinstance(n_permutations, bool)
-        or not isinstance(n_permutations, int)
-        or not _MIN_PERMUTATIONS <= n_permutations <= _MAX_PERMUTATIONS
+        isinstance(value, bool)
+        or not isinstance(value, int)
+        or not _MIN_RESAMPLES <= value <= _MAX_RESAMPLES
     ):
         raise InvalidParameterError(
-            "n_permutations must be an integer between 100 and 100000.",
+            f"{parameter_name} must be an integer between 100 and 100000.",
             details={
-                "n_permutations": n_permutations,
-                "minimum": _MIN_PERMUTATIONS,
-                "maximum": _MAX_PERMUTATIONS,
+                parameter_name: value,
+                "minimum": _MIN_RESAMPLES,
+                "maximum": _MAX_RESAMPLES,
             },
         )
 
@@ -36,6 +36,19 @@ def _validate_seed(seed: int | None) -> None:
         raise InvalidParameterError(
             "seed must be a non-negative integer or None.",
             details={"seed": seed},
+        )
+
+
+def _validate_confidence_level(confidence_level: float) -> None:
+    """Validate a confidence level for interval estimation."""
+    if (
+        isinstance(confidence_level, bool)
+        or not isinstance(confidence_level, int | float)
+        or not 0 < confidence_level < 1
+    ):
+        raise InvalidParameterError(
+            "confidence_level must be strictly between zero and one.",
+            details={"confidence_level": confidence_level},
         )
 
 
@@ -69,7 +82,7 @@ def permutation_mean_test(
     """
     validate_alpha(alpha)
     normalized_alternative = normalize_alternative(alternative)
-    _validate_permutation_count(n_permutations)
+    _validate_resample_count(n_permutations, parameter_name="n_permutations")
     _validate_seed(seed)
     validated = validate_ab_samples(
         group_a,
@@ -139,5 +152,88 @@ def permutation_mean_test(
             "extreme_count": extreme_count,
             "p_value_method": "add_one_monte_carlo",
             "null_distribution": [float(value) for value in null_distribution],
+        },
+    )
+
+
+def bootstrap_mean_difference(
+    group_a: SampleLike,
+    group_b: SampleLike,
+    *,
+    confidence_level: float = 0.95,
+    n_resamples: int = 10_000,
+    seed: int | None = None,
+    missing_policy: MissingValuePolicy = MissingValuePolicy.DROP,
+) -> StatisticalResult:
+    """Estimate the independent mean difference B minus A by percentile bootstrap.
+
+    Each group is resampled independently with replacement. A fixed seed reproduces
+    the bootstrap distribution, standard error, and percentile interval.
+    """
+    _validate_confidence_level(confidence_level)
+    _validate_resample_count(n_resamples, parameter_name="n_resamples")
+    _validate_seed(seed)
+    validated = validate_ab_samples(
+        group_a,
+        group_b,
+        metric_type=MetricType.CONTINUOUS,
+        missing_policy=missing_policy,
+        minimum_size=2,
+    )
+
+    values_a = validated.group_a.values
+    values_b = validated.group_b.values
+    n_a = int(values_a.size)
+    n_b = int(values_b.size)
+    estimate = float(np.mean(values_b) - np.mean(values_a))
+    bootstrap_distribution = np.empty(n_resamples, dtype=float)
+    rng = np.random.default_rng(seed)
+
+    for index in range(n_resamples):
+        resampled_a = rng.choice(values_a, size=n_a, replace=True)
+        resampled_b = rng.choice(values_b, size=n_b, replace=True)
+        bootstrap_distribution[index] = float(np.mean(resampled_b) - np.mean(resampled_a))
+
+    tail_probability = (1 - confidence_level) / 2
+    lower, upper = np.quantile(
+        bootstrap_distribution,
+        [tail_probability, 1 - tail_probability],
+    )
+    standard_error = float(np.std(bootstrap_distribution, ddof=1))
+
+    return StatisticalResult(
+        test_name="bootstrap_mean_difference",
+        metric_type=MetricType.CONTINUOUS,
+        alpha=1 - confidence_level,
+        alternative=Alternative.TWO_SIDED,
+        estimate=estimate,
+        confidence_interval=ConfidenceInterval(
+            lower=float(lower),
+            upper=float(upper),
+            level=confidence_level,
+            parameter="difference_in_means_b_minus_a",
+            method="bootstrap_percentile",
+        ),
+        assumptions=(
+            "The two groups contain independent observations.",
+            "Observations within each group are representative and identically distributed.",
+            "The empirical group distributions approximate their populations.",
+        ),
+        interpretation={
+            "estimand": "The population mean difference, group B minus group A.",
+            "interval": (
+                "The percentile interval describes bootstrap uncertainty around the "
+                "estimated mean difference."
+            ),
+        },
+        metadata={
+            "n_a": n_a,
+            "n_b": n_b,
+            "difference_direction": "group_b_minus_group_a",
+            "n_resamples": n_resamples,
+            "seed": seed,
+            "standard_error": standard_error,
+            "interval_method": "percentile",
+            "bootstrap_distribution": [float(value) for value in bootstrap_distribution],
         },
     )

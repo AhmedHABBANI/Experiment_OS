@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 6 - Mann-Whitney and mean permutation tests completed in the statistics library
+Phase 6 - Mann-Whitney, permutation and mean bootstrap completed in the statistics library
 
 ## Completed
 
@@ -172,8 +172,30 @@ Phase 6 - Mann-Whitney and mean permutation tests completed in the statistics li
 - Fixed-seed permutation p-value and null-distribution reproducibility validated
 - Permutation result validated for strict JSON compatibility
 - Permutation mean test exported from the public statistics package interface
+- Independent percentile bootstrap for the mean difference implemented in `experiment_os_stats`
+- Bootstrap estimate consistently oriented as mean B minus mean A
+- Bootstrap groups resampled independently with replacement while preserving group sizes
+- Bootstrap replication count bounded from 100 to 100000 with structured parameter errors
+- Configurable confidence level and optional non-negative seed validation implemented
+- Bootstrap standard error computed from the replicate distribution with `ddof=1`
+- Two-sided percentile confidence interval implemented for the mean difference
+- Complete bootstrap distribution and reproducibility metadata returned
+- Bootstrap estimation deliberately returns no p-value or null-hypothesis decision
+- Constant groups supported with zero standard error and a point percentile interval
+- Bootstrap standard error and percentile interval validated against SciPy
+- Fixed-seed bootstrap distribution and interval reproducibility validated
+- Bootstrap result validated for strict JSON compatibility
+- Bootstrap mean difference exported from the public statistics package interface
 
 ## Validation
+
+- Mean-bootstrap initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 65 files already formatted
+- Mean-bootstrap initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Mean-bootstrap initial Docker validation: passed, 239 tests, 99.26% `experiment_os_stats` coverage
+- Targeted bootstrap and permutation regression validation: passed, 42 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 66 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 261 tests, 99.28% `experiment_os_stats` coverage
 
 - Permutation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 63 files already formatted
 - Permutation initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -451,15 +473,16 @@ Phase 6 - Mann-Whitney and mean permutation tests completed in the statistics li
 - `packages/experiment_os_stats/tests/test_mann_whitney.py`
 - `packages/experiment_os_stats/src/experiment_os_stats/analyses/resampling.py`
 - `packages/experiment_os_stats/tests/test_permutation_mean.py`
+- `packages/experiment_os_stats/tests/test_bootstrap_mean.py`
 
 ## Current milestone status
 
-- Phase 6 Mann-Whitney and permutation milestones completed in the statistics library
+- Phase 6 Mann-Whitney, permutation and mean-bootstrap milestones completed in the statistics library
 
 ## Next milestone
 
 Continue Phase 6 with a limited statistics-library milestone:
 
-- implement percentile bootstrap for the independent difference in means B minus A
-- support bounded replication count, confidence level and reproducible seed
-- return bootstrap standard error, percentile interval and bootstrap distribution without adding median bootstrap, API or frontend integration in the same increment
+- implement percentile bootstrap for the independent difference in medians B minus A
+- reuse the established bounded replication, confidence-level and seed contracts
+- validate the median estimate, interval and reproducibility without adding API or frontend integration in the same increment
