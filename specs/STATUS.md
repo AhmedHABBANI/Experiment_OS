@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 7 - CSV import completed end to end
+Phase 8 - Deterministic binary interpretation foundation completed
 
 ## Completed
 
@@ -241,8 +241,29 @@ Phase 7 - CSV import completed end to end
 - Imported normalized datasets reuse the existing descriptive, diagnostic and binary-analysis pipeline
 - Import validation summary displays retained A/B observations and exclusion reasons
 - Uploaded data remains in memory and is never persisted by the frontend
+- Immutable `StatisticalInterpretation` contract implemented in `experiment_os_stats`
+- Structured interpretation fields implemented for question, hypotheses, decision, effect, uncertainty and practical significance
+- Legacy partial interpretation mappings remain serialization-compatible
+- Deterministic two-proportion z-test interpretation implemented
+- Deterministic Fisher exact-test interpretation implemented
+- Binary effect wording consistently reports the observed B-minus-A difference in percentage points
+- Non-rejection wording explicitly avoids accepting or proving the null hypothesis
+- Z-test uncertainty wording contextualizes confidence intervals above, below or crossing zero
+- Fisher interpretation states when uncertainty in the rate difference is not quantified by an interval
+- Practical significance remains explicitly unassessed when no practical threshold is provided
+- Statistical warnings are contextualized in the deterministic interpretation
+- Directional alternatives generate matching greater-than or less-than hypotheses
 
 ## Validation
+
+- Phase 8 binary-interpretation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 73 files already formatted
+- Phase 8 binary-interpretation initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 8 binary-interpretation initial Docker validation: passed, 297 tests, 99.29% `experiment_os_stats` coverage
+- Targeted binary interpretation, z-test, Fisher and API validation: passed, 48 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed after formatting 3 files, 75 files left unchanged on the last run
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final Docker `pytest`: passed, 307 tests
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 307 tests, 99.16% `experiment_os_stats` coverage
 
 - Frontend CSV-import initial `npm.cmd run lint --prefix frontend`: passed
 - First sandboxed frontend test/build attempt: blocked before config loading by Windows parent-directory access restrictions
@@ -589,16 +610,19 @@ Phase 7 - CSV import completed end to end
 - `backend/tests/test_csv_mapping.py`
 - `frontend/src/api/datasets.js`
 - `frontend/src/components/CsvImportPanel.jsx`
+- `packages/experiment_os_stats/src/experiment_os_stats/interpretation/__init__.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/interpretation/binary.py`
+- `packages/experiment_os_stats/tests/test_binary_interpretation.py`
 
 ## Current milestone status
 
-- Phase 7 completed: secure CSV upload, preview, mapping, normalization and frontend analysis integration
+- Phase 8 first milestone completed: structured deterministic interpretation for binary z and Fisher analyses
 
 ## Next milestone
 
-Start Phase 8 with a limited deterministic-interpretation foundation milestone:
+Continue Phase 8 with a limited continuous parametric interpretation milestone:
 
-- define a stable structured interpretation contract in `experiment_os_stats`
-- implement deterministic decision, effect and uncertainty wording for one existing test family
-- explicitly avoid claims that the null hypothesis is true
-- add focused unit tests for p-values above and below alpha and confidence intervals crossing zero
+- reuse the structured interpretation contract for Student and Welch tests
+- describe mean differences, confidence intervals and Cohen's d without overstating practical importance
+- contextualize imbalance and outlier warnings
+- cover significant, non-significant, interval-crossing-zero and directional-alternative cases

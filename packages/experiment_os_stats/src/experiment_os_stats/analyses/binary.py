@@ -10,6 +10,7 @@ from experiment_os_stats.analyses._common import normalize_alternative, validate
 from experiment_os_stats.data.normalization import SampleLike
 from experiment_os_stats.data.validation import validate_ab_samples
 from experiment_os_stats.exceptions import DegenerateSampleError
+from experiment_os_stats.interpretation import interpret_binary_result
 from experiment_os_stats.results import ConfidenceInterval, StatisticalResult, StatisticalWarning
 from experiment_os_stats.types import Alternative, MetricType, MissingValuePolicy, WarningSeverity
 
@@ -131,12 +132,18 @@ def two_proportion_z_test(
         method="wald_unpooled",
     )
     odds_ratio = _odds_ratio(successes_a, failures_a, successes_b, failures_b)
+    p_value = _p_value(statistic, normalized_alternative)
+    warnings = _asymptotic_warnings(
+        n_a=n_a,
+        n_b=n_b,
+        pooled_proportion=pooled_proportion,
+    )
 
     return StatisticalResult(
         test_name="two_proportion_z_test",
         metric_type=MetricType.BINARY,
         statistic=float(statistic),
-        p_value=_p_value(statistic, normalized_alternative),
+        p_value=p_value,
         alpha=alpha,
         alternative=normalized_alternative,
         estimate=float(difference),
@@ -148,22 +155,16 @@ def two_proportion_z_test(
             "Each observation has a binary outcome.",
             "The pooled normal approximation is sufficiently accurate for the null test.",
         ),
-        warnings=_asymptotic_warnings(
-            n_a=n_a,
-            n_b=n_b,
-            pooled_proportion=pooled_proportion,
+        warnings=warnings,
+        interpretation=interpret_binary_result(
+            test_name="two_proportion_z_test",
+            estimate=float(difference),
+            p_value=p_value,
+            alpha=alpha,
+            alternative=normalized_alternative,
+            confidence_interval=confidence_interval,
+            warnings=warnings,
         ),
-        interpretation={
-            "null_hypothesis": "The population proportions in groups A and B are equal.",
-            "alternative_hypothesis": (
-                "The population proportion in group B differs from group A."
-                if normalized_alternative is Alternative.TWO_SIDED
-                else (
-                    "The population proportion in group B is "
-                    f"{normalized_alternative.value} than group A."
-                )
-            ),
-        },
         metadata={
             "n_a": n_a,
             "n_b": n_b,
@@ -249,15 +250,17 @@ def fisher_exact_test(
     )
     proportion_a = successes_a / n_a
     proportion_b = successes_b / n_b
+    p_value = float(reference.pvalue)
+    difference = proportion_b - proportion_a
 
     return StatisticalResult(
         test_name="fisher_exact_test",
         metric_type=MetricType.BINARY,
         statistic=odds_ratio,
-        p_value=float(reference.pvalue),
+        p_value=p_value,
         alpha=alpha,
         alternative=normalized_alternative,
-        estimate=proportion_b - proportion_a,
+        estimate=difference,
         effect_size=odds_ratio,
         effect_size_name="odds_ratio" if odds_ratio is not None else None,
         assumptions=(
@@ -266,17 +269,15 @@ def fisher_exact_test(
             "Group totals and the combined outcome totals are treated as fixed.",
         ),
         warnings=warnings,
-        interpretation={
-            "null_hypothesis": "The outcome and group membership are independent.",
-            "alternative_hypothesis": (
-                "The outcome and group membership are associated."
-                if normalized_alternative is Alternative.TWO_SIDED
-                else (
-                    "The odds of success in group B are "
-                    f"{normalized_alternative.value} than in group A."
-                )
-            ),
-        },
+        interpretation=interpret_binary_result(
+            test_name="fisher_exact_test",
+            estimate=difference,
+            p_value=p_value,
+            alpha=alpha,
+            alternative=normalized_alternative,
+            confidence_interval=None,
+            warnings=warnings,
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,

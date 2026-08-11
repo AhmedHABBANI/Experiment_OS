@@ -49,6 +49,7 @@ from experiment_os_stats.exceptions import (
 )
 from experiment_os_stats.results import (
     ConfidenceInterval,
+    StatisticalInterpretation,
     StatisticalResult,
     StatisticalWarning,
 )
@@ -95,6 +96,7 @@ __all__ = [
     "QQPlotData",
     "SampleValidationSummary",
     "StatisticalResult",
+    "StatisticalInterpretation",
     "StatisticalWarning",
     "ValidatedABData",
     "ValidatedSample",

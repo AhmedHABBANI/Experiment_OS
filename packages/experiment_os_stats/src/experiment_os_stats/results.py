@@ -67,6 +67,67 @@ class StatisticalWarning:
 
 
 @dataclass(frozen=True, slots=True)
+class StatisticalInterpretation:
+    """Stable deterministic interpretation attached to a statistical result."""
+
+    null_hypothesis: str
+    alternative_hypothesis: str
+    question: str | None = None
+    decision: str | None = None
+    effect: str | None = None
+    uncertainty: str | None = None
+    practical_significance: str | None = None
+    warning_context: str | None = None
+
+    def __post_init__(self) -> None:
+        """Reject empty required hypotheses and blank optional messages."""
+        if not self.null_hypothesis.strip() or not self.alternative_hypothesis.strip():
+            raise ValueError("Interpretation hypotheses cannot be empty.")
+        optional_messages = (
+            self.question,
+            self.decision,
+            self.effect,
+            self.uncertainty,
+            self.practical_significance,
+            self.warning_context,
+        )
+        if any(message is not None and not message.strip() for message in optional_messages):
+            raise ValueError("Interpretation messages cannot be blank.")
+
+    def to_dict(self) -> dict[str, str]:
+        """Return populated interpretation fields as a JSON-compatible mapping."""
+        values = {
+            "question": self.question,
+            "null_hypothesis": self.null_hypothesis,
+            "alternative_hypothesis": self.alternative_hypothesis,
+            "decision": self.decision,
+            "effect": self.effect,
+            "uncertainty": self.uncertainty,
+            "practical_significance": self.practical_significance,
+            "warning_context": self.warning_context,
+        }
+        return {key: value for key, value in values.items() if value is not None}
+
+    def __getitem__(self, key: str) -> str:
+        """Preserve read access used by the former interpretation mapping."""
+        return self.to_dict()[key]
+
+    @classmethod
+    def from_dict(cls, values: dict[str, str]) -> "StatisticalInterpretation":
+        """Convert the legacy hypothesis mapping to the structured contract."""
+        return cls(
+            null_hypothesis=values["null_hypothesis"],
+            alternative_hypothesis=values["alternative_hypothesis"],
+            question=values.get("question"),
+            decision=values.get("decision"),
+            effect=values.get("effect"),
+            uncertainty=values.get("uncertainty"),
+            practical_significance=values.get("practical_significance"),
+            warning_context=values.get("warning_context"),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class StatisticalResult:
     """Standard result returned by an ExperimentOS statistical method."""
 
@@ -88,7 +149,7 @@ class StatisticalResult:
     assumptions: tuple[str, ...] = ()
     warnings: tuple[StatisticalWarning, ...] = ()
 
-    interpretation: dict[str, str] = field(default_factory=dict)
+    interpretation: StatisticalInterpretation | dict[str, str] = field(default_factory=dict)
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -123,6 +184,16 @@ class StatisticalResult:
         if any(not assumption.strip() for assumption in self.assumptions):
             raise ValueError("Assumptions cannot contain empty strings.")
 
+        if isinstance(self.interpretation, dict) and {
+            "null_hypothesis",
+            "alternative_hypothesis",
+        }.issubset(self.interpretation):
+            object.__setattr__(
+                self,
+                "interpretation",
+                StatisticalInterpretation.from_dict(self.interpretation),
+            )
+
     def to_dict(self) -> dict[str, Any]:
         """Return a JSON-compatible representation of the result."""
         return {
@@ -141,6 +212,10 @@ class StatisticalResult:
             "reject_null": self.reject_null,
             "assumptions": list(self.assumptions),
             "warnings": [warning.to_dict() for warning in self.warnings],
-            "interpretation": dict(self.interpretation),
+            "interpretation": (
+                self.interpretation.to_dict()
+                if isinstance(self.interpretation, StatisticalInterpretation)
+                else dict(self.interpretation)
+            ),
             "metadata": dict(self.metadata),
         }
