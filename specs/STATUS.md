@@ -1,0 +1,465 @@
+# ExperimentOS - Development Status
+
+## Current phase
+
+Phase 6 - Mann-Whitney and mean permutation tests completed in the statistics library
+
+## Completed
+
+- Project documentation initialized
+- Repository architecture defined
+- Python package configuration added
+- Development environment configured
+- Shared statistical enumerations implemented
+- Structured domain exceptions implemented
+- Standard confidence interval model implemented
+- Structured statistical warning model implemented
+- Standard statistical result model implemented
+- Automatic null-hypothesis decision inference implemented
+- JSON-compatible result serialization implemented
+- Public package interface updated
+- Unit tests added for common result structures
+- Common numerical-array conversion implemented
+- Binary sample validation implemented
+- Continuous sample validation implemented
+- Missing-value handling implemented
+- Independent A/B group validation implemented
+- Structured validation summaries implemented
+- Binary A/B simulation implemented
+- Binary simulation metadata and strict JSON serialization implemented
+- Continuous A/B simulation implemented
+- Normal, shifted-exponential and lognormal continuous distributions implemented
+- Continuous missing-value and outlier contamination implemented
+- Continuous simulation metadata and strict JSON serialization implemented
+- Minimal FastAPI backend scaffold implemented
+- `GET /api/v1/health` implemented
+- `POST /api/v1/simulations/binary` implemented
+- `POST /api/v1/simulations/continuous` implemented
+- Simulation request and response schemas implemented
+- Backend simulation service delegates to `experiment_os_stats`
+- Minimal React/Vite frontend scaffold implemented
+- Binary and continuous simulation forms implemented
+- Simulation API client implemented
+- Dataset preview table implemented
+- Browser-side CSV download implemented
+- Backend Dockerfile implemented
+- Frontend Dockerfile implemented
+- Nginx frontend proxy for `/api` implemented
+- Docker Compose local stack implemented
+- Docker build context optimized with `.dockerignore`
+- Local run commands documented in `README.md`
+- Binary descriptive statistics implemented
+- Binary A/B comparison metrics implemented
+- Continuous descriptive statistics implemented
+- Continuous A/B comparison metrics implemented
+- Descriptive statistics exported from the public statistics package interface
+- `POST /api/v1/descriptive/binary` implemented
+- `POST /api/v1/descriptive/continuous` implemented
+- Descriptive request and response schemas implemented
+- Backend descriptive service delegates to `experiment_os_stats`
+- Frontend descriptive API client implemented
+- Frontend displays descriptive summaries after simulation
+- Frontend displays binary and continuous A/B comparison metrics
+- Binary rate plot data implemented
+- Continuous histogram data implemented
+- Continuous boxplot data implemented
+- Continuous normal QQ plot data implemented
+- Diagnostic visualization data exported from the public statistics package interface
+- `POST /api/v1/diagnostics/binary-rate` implemented
+- `POST /api/v1/diagnostics/continuous-distribution` implemented
+- Typed diagnostic request and response schemas implemented
+- Backend diagnostic service delegates all statistical preparation to `experiment_os_stats`
+- Frontend diagnostic API client implemented
+- Binary success-rate chart with confidence intervals implemented with Plotly.js
+- Continuous histogram, boxplot and normal QQ charts implemented with Plotly.js
+- Diagnostic charts include deterministic textual summaries
+- Diagnostic requests run alongside descriptive requests after simulation
+- Responsive diagnostic chart layout implemented
+- Independent two-proportion z-test implemented in `experiment_os_stats`
+- Two-proportion z statistic and p-values implemented for two-sided, greater and less alternatives
+- Difference in proportions consistently oriented as group B minus group A
+- Unpooled Wald confidence interval implemented for the proportion difference
+- Odds ratio and risk ratio effect metadata implemented when defined
+- Structured warning implemented for null-model expected counts below five
+- Degenerate pooled-variance handling implemented with a structured domain error
+- Two-proportion z-test exported from the public statistics package interface
+- Numerical validation against Statsmodels implemented for statistics, p-values and confidence intervals
+- Fisher's exact test implemented in `experiment_os_stats`
+- Fisher alternatives consistently compare group B with group A
+- Fisher 2 x 2 contingency table and orientation metadata implemented
+- Finite Fisher odds ratios exposed through the shared effect-size contract
+- Infinite Fisher odds ratios normalized to `None` with a structured warning for strict JSON compatibility
+- Degenerate combined binary outcomes rejected with a structured domain error
+- Fisher's exact test exported from the public statistics package interface
+- Fisher statistic and p-value validated against SciPy for all supported alternatives
+- Seeded Monte-Carlo false-positive validation implemented for binary z and Fisher tests
+- Empirical directional-power validation implemented for binary z and Fisher tests
+- Increasing z-test power with increasing effect size validated empirically
+- Monte-Carlo reproducibility with a fixed seed validated
+- Monte-Carlo replication counts bounded to keep the test suite fast
+- `POST /api/v1/analyses/two-proportion-z` implemented
+- `POST /api/v1/analyses/fisher-exact` implemented
+- Shared typed binary-analysis request schema implemented
+- Shared typed `StatisticalResult` API response schema implemented
+- Typed confidence-interval and statistical-warning API schemas implemented
+- Backend analysis service delegates z and Fisher calculations to `experiment_os_stats`
+- Binary-analysis API domain errors remain structured and stable
+- Frontend binary-test selector implemented for z-test and Fisher exact
+- Frontend alternative-hypothesis and alpha controls implemented
+- Selected binary analysis runs after simulation without browser-side statistical calculations
+- Frontend statistical result panel implemented
+- Frontend displays statistic, p-value, B-minus-A estimate, effect size and decision
+- Frontend displays confidence intervals when applicable
+- Frontend displays H0, H1 and structured statistical warnings
+- Responsive analysis-result layout implemented
+- Student's independent two-sample t-test with equal variances implemented in `experiment_os_stats`
+- Continuous mean differences consistently oriented as group B minus group A
+- Pooled-variance t statistic implemented for two-sided, greater and less alternatives
+- Two-sided Student confidence interval implemented for the difference in means
+- Cohen's d implemented with the pooled sample standard deviation
+- Degrees of freedom, group moments, pooled variance and standard error exposed as metadata
+- Zero pooled variance rejected with a structured domain error
+- Shared alpha and alternative validation extracted for binary and continuous analyses
+- Student t statistic and p-values validated against SciPy for all supported alternatives
+- Student confidence interval validated against Statsmodels
+- Student's t-test exported from the public statistics package interface
+- Welch's independent two-sample t-test implemented in `experiment_os_stats`
+- Welch statistic implemented for two-sided, greater and less alternatives
+- Welch-Satterthwaite degrees of freedom implemented with separate group variances
+- Two-sided Welch confidence interval implemented for the difference in means
+- Cohen's d returned as a descriptive pooled-standard-deviation effect size
+- Welch effect calculations consistently oriented as group B minus group A
+- One constant group supported when the other group provides a non-zero standard error
+- Zero Welch standard error rejected with a structured domain error
+- Welch statistic and p-values validated against SciPy for all supported alternatives
+- Welch confidence interval validated against Statsmodels
+- Equal-size, equal-variance agreement between Student and Welch validated
+- Welch's t-test exported from the public statistics package interface
+- Seeded Monte-Carlo false-positive validation implemented for Student and Welch under equal variances
+- Welch false-positive control validated under unequal variances in an intentionally unbalanced design
+- Student's sensitivity to violated equal-variance assumptions demonstrated in the same unbalanced design
+- Directional power validated empirically for Student and Welch
+- Continuous Monte-Carlo reproducibility with a fixed seed validated
+- Continuous Monte-Carlo replication counts bounded to keep the test suite fast
+- Structured sample-size imbalance warnings implemented for Student and Welch
+- Sample-size imbalance threshold fixed at a maximum-to-minimum group-size ratio of four
+- Structured IQR outlier warnings implemented for Student and Welch
+- Outliers detected per group with the 1.5 IQR Tukey-fence rule
+- Outlier warning details include counts, fences, IQR and multiplier
+- Continuous diagnostic warning payloads validated for strict JSON compatibility
+- Nominal continuous samples validated to remain warning-free
+- Independent two-sided Mann-Whitney U test implemented in `experiment_os_stats`
+- Mann-Whitney U statistic consistently computed for group B against group A
+- Rank-biserial correlation implemented with positive values favoring higher ranks in B
+- Common-language probability of superiority exposed as Mann-Whitney metadata
+- SciPy automatic exact/asymptotic method selection used for the reference calculation
+- Tied observations detected and reported with a structured informational warning
+- Automatic median interpretation explicitly rejected with a structured informational warning
+- Completely constant combined ranks rejected with a structured domain error
+- Mann-Whitney statistic and p-value validated against SciPy with and without ties
+- Mann-Whitney strict JSON serialization and missing-value behavior validated
+- Mann-Whitney test exported from the public statistics package interface
+- Monte-Carlo permutation test for the independent mean difference implemented in `experiment_os_stats`
+- Permutation observed statistic consistently oriented as mean B minus mean A
+- Two-sided, greater and less permutation alternatives implemented
+- Permutation count bounded from 100 to 100000 with structured parameter errors
+- Optional non-negative seed validation implemented for reproducible permutation distributions
+- Group sizes preserved during every label permutation
+- Empirical permutation p-value implemented with the add-one Monte-Carlo correction
+- Complete permutation null distribution and extreme-count metadata returned
+- Constant combined observations rejected with a structured domain error
+- Permutation p-value validated against SciPy within bounded Monte-Carlo tolerance
+- Fixed-seed permutation p-value and null-distribution reproducibility validated
+- Permutation result validated for strict JSON compatibility
+- Permutation mean test exported from the public statistics package interface
+
+## Validation
+
+- Permutation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 63 files already formatted
+- Permutation initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Permutation initial Docker validation: passed, 219 tests, 99.21% `experiment_os_stats` coverage
+- Targeted permutation validation: passed, 20 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 65 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 239 tests, 99.26% `experiment_os_stats` coverage
+
+- Mann-Whitney initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 61 files already formatted
+- Mann-Whitney initial `.\.venv\Scripts\ruff.exe check .`: passed
+- First Mann-Whitney initial Docker validation attempt: timed out during environment preparation before tests ran
+- Mann-Whitney initial Docker validation retry: passed, 207 tests, 99.18% `experiment_os_stats` coverage
+- First targeted Mann-Whitney run: 11 tests passed and 1 failed because perfect separation with only three observations per group has an exact two-sided p-value of 0.1
+- Perfect-separation decision test increased to five observations per group while preserving the rank-effect boundary
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 63 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted Mann-Whitney validation: passed, 12 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest packages/experiment_os_stats/tests/test_mann_whitney.py && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 219 tests, 99.21% `experiment_os_stats` coverage
+
+- Continuous warnings initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 60 files already formatted
+- Continuous warnings initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Continuous warnings initial Docker validation: passed, 200 tests, 99.15% `experiment_os_stats` coverage
+- First targeted warning run: 34 tests passed and 1 failed because the JSON test data had a size ratio of 2.5 instead of the warning threshold of 4
+- JSON warning test data corrected to exercise both imbalance and IQR warnings
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 61 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted continuous-warning validation: passed, 7 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest packages/experiment_os_stats/tests/test_continuous_analysis_warnings.py && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 207 tests, 99.18% `experiment_os_stats` coverage
+
+- Continuous Monte-Carlo initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 59 files already formatted
+- Continuous Monte-Carlo initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Continuous Monte-Carlo initial Docker validation: passed, 194 tests, 99.15% `experiment_os_stats` coverage
+- Targeted continuous Monte-Carlo validation: passed, 6 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 60 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 200 tests, 99.15% `experiment_os_stats` coverage
+
+- Welch initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 58 files already formatted
+- Welch initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Welch initial Docker validation: passed, 179 tests, 99.12% `experiment_os_stats` coverage
+- First targeted Welch run: 14 tests passed and 1 failed because a manually entered reference degree of freedom was inaccurate
+- Welch degree-of-freedom test corrected to compute an independent NumPy reference from the Welch-Satterthwaite formula
+- Final `.\.venv\Scripts\ruff.exe format .`: passed after reformatting 1 file
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted Welch validation: passed, 15 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest packages/experiment_os_stats/tests/test_welch_t.py && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 194 tests, 99.15% `experiment_os_stats` coverage
+
+- Phase 5 initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 55 files already formatted
+- Phase 5 initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 5 initial Docker validation: passed, 166 tests, 99.07% `experiment_os_stats` coverage
+- First targeted Student run: 12 tests passed and 1 failed because the test expected `InvalidParameterError` instead of the established `DataValidationError` for rejected missing values
+- Missing-value test corrected to assert the existing structured data-validation contract
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 58 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted Student validation: passed, 13 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest packages/experiment_os_stats/tests/test_student_t.py && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 179 tests, 99.12% `experiment_os_stats` coverage
+
+- Initial `ruff format --check .`: failed because `ruff` is not available on the global PATH
+- Initial `ruff check .`: failed because `ruff` is not available on the global PATH
+- Initial `pytest`: failed because `pytest` is not available on the global PATH
+- Initial `pytest --cov=experiment_os_stats --cov-report=term-missing`: failed because `pytest` is not available on the global PATH
+- `.\\.venv\\Scripts\\ruff.exe format --check .`: passed, 11 files already formatted
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `.\\.venv\\Scripts\\pytest.exe`: failed because the virtualenv points to a missing Python 3.12 executable
+- `.\\.venv\\Scripts\\pytest.exe --cov=experiment_os_stats --cov-report=term-missing`: failed because the virtualenv points to a missing Python 3.12 executable
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 1 file reformatted
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] && pytest"`: passed, 70 tests
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 70 tests, 97.26% coverage
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 1 file reformatted
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] && pytest"`: passed, 90 tests
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 90 tests, 97.94% coverage
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 30 files left unchanged
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed after import sorting fix
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest"`: passed, 94 tests, 1 Starlette TestClient deprecation warning
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 94 tests, 97.94% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `.\.venv\Scripts\ruff.exe format --check .`: passed, 42 files already formatted before the diagnostics API milestone
+- `.\.venv\Scripts\ruff.exe check .`: passed before the diagnostics API milestone
+- Initial Docker `pytest` and coverage validation: passed, 117 tests, 98.92% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- First final Docker validation attempt: stopped during dependency download because `files.pythonhosted.org` timed out before tests ran
+- Second final Docker validation attempt: exposed and led to correction of a duplicate Pytest module name between backend and package diagnostics tests
+- `.\.venv\Scripts\ruff.exe format .`: passed, 46 files left unchanged
+- `.\.venv\Scripts\ruff.exe check .`: passed after diagnostics API implementation
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install --timeout 120 -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 122 tests, 98.92% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `npm.cmd install react-plotly.js plotly.js`: passed; npm reported 8 dependency vulnerabilities and one deprecation warning for Plotly's Mapbox package
+- `npm.cmd run lint`: passed after frontend diagnostics integration
+- `npm.cmd run test`: passed, 3 test files and 4 tests
+- `npm.cmd run build`: passed; Vite reported a large Plotly bundle warning (about 5.1 MB before gzip)
+- `docker compose up --build -d`: passed; backend and frontend containers started
+- Runtime HTTP verification: frontend returned 200, health returned `ok`, and the binary diagnostics endpoint returned groups A/B with expected counts
+- Browser visual verification was not executed because the in-app browser control tool was unavailable in this session
+- `.\.venv\Scripts\ruff.exe format .`: passed, 46 files left unchanged
+- `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install --timeout 120 -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 122 tests, 98.92% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- Phase 4 initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 46 files already formatted
+- Phase 4 initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 4 initial Docker validation: passed, 122 tests, 98.92% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- First targeted z-test run: 13 tests passed and 2 reference tests failed because Statsmodels uses `larger`/`smaller` while ExperimentOS uses `greater`/`less`; the reference mapping was corrected
+- `.\.venv\Scripts\ruff.exe format .`: passed after formatting 2 new files
+- `.\.venv\Scripts\ruff.exe check .`: passed after one long hypothesis string was reformatted
+- Targeted two-proportion z-test validation: passed, 15 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install --timeout 120 -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 137 tests, 99.03% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- Fisher initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 49 files already formatted
+- Fisher initial `.\.venv\Scripts\ruff.exe check .`: passed
+- First Fisher initial Docker validation attempt: timed out during environment preparation before tests ran
+- Fisher initial Docker coverage validation retry: passed, 137 tests, 99.03% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `.\.venv\Scripts\ruff.exe format .`: passed after formatting 1 Fisher test file
+- `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted Fisher validation against SciPy: passed, 14 tests
+- First final Python 3.12 slim validation attempt: timed out during environment preparation before tests ran
+- First local backend-image validation attempt: collection failed because the installed Starlette version requires `httpx2`; no tests ran
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 151 tests, 99.07% `experiment_os_stats` coverage
+- Monte-Carlo initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 50 files already formatted
+- Monte-Carlo initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Monte-Carlo initial Docker validation: passed, 151 tests, 99.07% `experiment_os_stats` coverage
+- First targeted Monte-Carlo run: 5 tests passed and the Fisher H0 lower-bound assertion failed because the observed 1.8% false-positive rate was conservatively below the generic 2% lower bound
+- Fisher's Monte-Carlo criterion was corrected to verify non-inflation at or below 5%, reflecting discreteness of the exact test
+- `.\.venv\Scripts\ruff.exe format .`: passed, 51 files left unchanged
+- `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted Monte-Carlo validation: passed, 6 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 157 tests, 99.07% `experiment_os_stats` coverage
+- Binary-analysis API initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 51 files already formatted
+- Binary-analysis API initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Binary-analysis API initial Docker validation: passed, 157 tests, 99.07% `experiment_os_stats` coverage
+- `.\.venv\Scripts\ruff.exe format .`: passed, 55 files left unchanged
+- `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted binary-analysis API validation: passed, 9 tests
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 166 tests, 99.07% `experiment_os_stats` coverage
+- `docker compose up --build -d`: timed out while rebuilding the unchanged frontend before Compose completed
+- `docker compose up --build -d backend`: built the backend image but returned a transient container-name conflict during recreation
+- Targeted container inspection confirmed the renewed backend container was running
+- Runtime HTTP verification passed for both `/api/v1/analyses/two-proportion-z` and `/api/v1/analyses/fisher-exact`
+- Frontend analysis integration initial `npm.cmd run lint`: passed
+- Frontend analysis integration initial `npm.cmd run test`: passed, 3 test files and 4 tests
+- Frontend analysis integration initial `npm.cmd run build`: passed with the existing large Plotly bundle warning
+- First frontend analysis test run: ESLint passed; 4 tests passed and 1 failed because the form and result used the same `Statistical analysis` heading
+- Form heading changed to `Analysis settings` to remove the accessible-name ambiguity
+- Final `npm.cmd run lint`: passed
+- Final `npm.cmd run test`: passed, 3 test files and 5 tests
+- Final `npm.cmd run build`: passed; bundle remains about 5.1 MB before gzip because of Plotly
+- `.\.venv\Scripts\ruff.exe format .`: passed, 55 files left unchanged
+- `.\.venv\Scripts\ruff.exe check .`: passed
+- Final `docker run --rm -v ${PWD}:/src -w /src experimentos-backend sh -c "pip install --timeout 180 -q -e packages/experiment_os_stats[dev] pytest-cov httpx2 && pytest && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 166 tests, 99.07% `experiment_os_stats` coverage
+- Local Vite development server started on `127.0.0.1:5173`; HTTP verification returned 200
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 30 files left unchanged
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `npm.cmd run lint`: passed
+- `npm.cmd run test`: passed, 2 test files and 3 tests
+- `npm.cmd run build`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 94 tests, 97.94% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `docker compose config`: passed
+- `docker compose build`: passed for backend and frontend
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 42 files checked after 1 reformat
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 117 tests, 98.92% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `npm.cmd run lint`: passed
+- `npm.cmd run test`: passed, 2 test files and 3 tests
+- `npm.cmd run build`: passed
+- `docker compose config`: passed; frontend is published on `127.0.0.1:5175`
+- `docker compose build`: passed again after adding `.dockerignore`; frontend build context reduced to about 256 kB
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 35 files left unchanged
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 106 tests, 98.44% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `npm.cmd run lint`: passed
+- `npm.cmd run test`: passed, 2 test files and 3 tests
+- `npm.cmd run build`: passed
+- `docker compose config`: passed; frontend is published on `127.0.0.1:5175`
+- `npm.cmd run lint`: passed
+- `npm.cmd run test`: passed, 2 test files and 3 tests
+- `npm.cmd run build`: passed
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 39 files left unchanged
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker compose config`: passed; frontend is published on `127.0.0.1:5175`
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 111 tests, 98.79% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `docker compose build`: passed for backend and frontend
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 38 files checked after 1 reformat
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 111 tests, 98.79% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+- `npm.cmd run lint`: passed
+- `npm.cmd run test`: passed, 2 test files and 3 tests
+- `npm.cmd run build`: passed
+- `docker compose config`: passed; frontend is published on `127.0.0.1:5175`
+- `npm --version`: failed because PowerShell script execution blocks `npm.ps1`
+- `npm.cmd install`: initially timed out before creating `node_modules` or a lockfile
+- `npm.cmd install`: passed after rerun with network access; npm reported 10 vulnerabilities
+- `npm.cmd install --save-dev eslint-plugin-react`: passed; npm reported 11 vulnerabilities
+- `npm.cmd run lint`: passed after ESLint React JSX configuration updates
+- `npm.cmd run test`: passed, 2 test files and 3 tests
+- `npm.cmd run build`: passed
+- `.\\.venv\\Scripts\\ruff.exe format .`: passed, 30 files left unchanged
+- `.\\.venv\\Scripts\\ruff.exe check .`: passed
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest"`: passed, 94 tests, 1 Starlette TestClient deprecation warning
+- `docker run --rm -v ${PWD}:/src -w /src python:3.12-slim sh -c "pip install -q -e packages/experiment_os_stats[dev] fastapi httpx && pytest --cov=experiment_os_stats --cov-report=term-missing"`: passed, 94 tests, 97.94% `experiment_os_stats` coverage, 1 Starlette TestClient deprecation warning
+
+## Files added
+
+- `packages/experiment_os_stats/src/experiment_os_stats/simulation/__init__.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/simulation/binary.py`
+- `packages/experiment_os_stats/tests/test_binary_simulation.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/simulation/continuous.py`
+- `packages/experiment_os_stats/tests/test_continuous_simulation.py`
+- `backend/pyproject.toml`
+- `backend/app/__init__.py`
+- `backend/app/main.py`
+- `backend/app/api/__init__.py`
+- `backend/app/api/router.py`
+- `backend/app/api/v1/__init__.py`
+- `backend/app/api/v1/health.py`
+- `backend/app/api/v1/simulations.py`
+- `backend/app/errors.py`
+- `backend/app/schemas/__init__.py`
+- `backend/app/schemas/simulations.py`
+- `backend/app/services/__init__.py`
+- `backend/app/services/simulation_service.py`
+- `backend/tests/test_health.py`
+- `backend/tests/test_simulations.py`
+- `frontend/package.json`
+- `frontend/package-lock.json`
+- `frontend/index.html`
+- `frontend/vite.config.js`
+- `frontend/eslint.config.js`
+- `frontend/src/main.jsx`
+- `frontend/src/App.jsx`
+- `frontend/src/styles.css`
+- `frontend/src/api/simulations.js`
+- `frontend/src/lib/csv.js`
+- `frontend/src/tests/setup.js`
+- `frontend/src/tests/csv.test.js`
+- `frontend/src/tests/App.test.jsx`
+- `.dockerignore`
+- `docker-compose.yml`
+- `backend/Dockerfile`
+- `frontend/Dockerfile`
+- `frontend/nginx.conf`
+- `packages/experiment_os_stats/src/experiment_os_stats/descriptive/__init__.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/descriptive/binary.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/descriptive/continuous.py`
+- `packages/experiment_os_stats/tests/test_descriptive_binary.py`
+- `packages/experiment_os_stats/tests/test_descriptive_continuous.py`
+- `backend/app/api/v1/descriptive.py`
+- `backend/app/schemas/descriptive.py`
+- `backend/app/services/descriptive_service.py`
+- `backend/tests/test_descriptive.py`
+- `frontend/src/api/descriptive.js`
+- `packages/experiment_os_stats/src/experiment_os_stats/diagnostics/__init__.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/diagnostics/distribution_checks.py`
+- `packages/experiment_os_stats/tests/test_diagnostics.py`
+- `backend/app/api/v1/diagnostics.py`
+- `backend/app/schemas/diagnostics.py`
+- `backend/app/services/diagnostics_service.py`
+- `backend/tests/test_diagnostics_api.py`
+- `frontend/src/api/diagnostics.js`
+- `frontend/src/components/DiagnosticCharts.jsx`
+- `frontend/src/tests/DiagnosticCharts.test.jsx`
+- `packages/experiment_os_stats/src/experiment_os_stats/analyses/__init__.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/analyses/binary.py`
+- `packages/experiment_os_stats/tests/test_two_proportion_z.py`
+- `packages/experiment_os_stats/tests/test_fisher_exact.py`
+- `packages/experiment_os_stats/tests/test_binary_monte_carlo.py`
+- `backend/app/api/v1/analyses.py`
+- `backend/app/schemas/analyses.py`
+- `backend/app/services/analysis_service.py`
+- `backend/tests/test_binary_analyses_api.py`
+- `frontend/src/api/analyses.js`
+- `frontend/src/components/AnalysisResult.jsx`
+- `packages/experiment_os_stats/src/experiment_os_stats/analyses/_common.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/analyses/continuous.py`
+- `packages/experiment_os_stats/tests/test_student_t.py`
+- `packages/experiment_os_stats/tests/test_welch_t.py`
+- `packages/experiment_os_stats/tests/test_continuous_monte_carlo.py`
+- `packages/experiment_os_stats/tests/test_continuous_analysis_warnings.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/analyses/nonparametric.py`
+- `packages/experiment_os_stats/tests/test_mann_whitney.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/analyses/resampling.py`
+- `packages/experiment_os_stats/tests/test_permutation_mean.py`
+
+## Current milestone status
+
+- Phase 6 Mann-Whitney and permutation milestones completed in the statistics library
+
+## Next milestone
+
+Continue Phase 6 with a limited statistics-library milestone:
+
+- implement percentile bootstrap for the independent difference in means B minus A
+- support bounded replication count, confidence level and reproducible seed
+- return bootstrap standard error, percentile interval and bootstrap distribution without adding median bootstrap, API or frontend integration in the same increment

@@ -1,0 +1,48 @@
+[tool.pytest.ini_options]
+testpaths = [
+    "backend/tests",
+    "packages/experiment_os_stats/tests",
+]
+pythonpath = [
+    "backend",
+    "packages/experiment_os_stats/src",
+]
+addopts = [
+    "-q",
+    "--strict-markers",
+]
+
+[tool.coverage.run]
+source = [
+    "experiment_os_stats",
+]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 85
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = [
+    "backend",
+    "packages/experiment_os_stats/src",
+    "packages/experiment_os_stats/tests",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "SIM",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"

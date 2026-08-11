@@ -1,0 +1,317 @@
+project:
+  name: experiment-os
+  display_name: ExperimentOS
+  version: "0.1.0"
+  purpose: "Local full-stack platform for frequentist A/B experimentation."
+  runtime:
+    orchestration: docker-compose
+    persistence: none
+    deployment_target: local
+  languages:
+    backend: python
+    frontend: javascript
+    documentation: french
+    user_interface: english
+
+repository:
+  root_files:
+    CODEX.md: "Global context and locked decisions for Codex."
+    README.md: "Public presentation and quick start."
+    docker-compose.yml: "Start backend and frontend."
+    .env.example: "Document supported environment variables."
+    .gitignore: "Ignore local and generated files."
+    pyproject.toml: "Root Python tooling configuration."
+
+  specs:
+    path: specs/
+    files:
+      cahier-des-charges.md: "Functional and non-functional requirements."
+      repository-architecture.yaml: "Canonical repository architecture."
+      roadmap.md: "Incremental development plan."
+
+  backend:
+    path: backend/
+    responsibility: "FastAPI application and HTTP contracts."
+    files:
+      Dockerfile: "Backend image."
+      README.md: "Backend commands and notes."
+    app:
+      path: backend/app/
+      files:
+        main.py: "FastAPI factory and router registration."
+        config.py: "Environment settings."
+        errors.py: "API error types and exception handlers."
+      api:
+        path: backend/app/api/
+        files:
+          router.py: "Aggregate versioned routers."
+        v1:
+          path: backend/app/api/v1/
+          files:
+            health.py: "Health endpoint."
+            simulations.py: "Binary and continuous simulation endpoints."
+            datasets.py: "CSV preview, mapping and validation."
+            descriptive.py: "Descriptive statistics endpoints."
+            analyses.py: "Statistical analysis endpoints."
+            exports.py: "JSON, CSV and PDF endpoints."
+      schemas:
+        path: backend/app/schemas/
+        files:
+          common.py: "Enums and shared contracts."
+          datasets.py: "Dataset and CSV mapping contracts."
+          simulations.py: "Simulation contracts."
+          analyses.py: "Analysis request and result contracts."
+          exports.py: "Export contracts."
+      services:
+        path: backend/app/services/
+        files:
+          dataset_service.py: "Normalize imported datasets."
+          analysis_service.py: "Dispatch to the statistics package."
+          export_service.py: "Assemble exports and reports."
+    tests:
+      path: backend/tests/
+      directories:
+        api: backend/tests/api/
+        services: backend/tests/services/
+        fixtures: backend/tests/fixtures/
+
+  statistics_library:
+    path: packages/experiment_os_stats/
+    responsibility: "Framework-independent statistical engine."
+    files:
+      pyproject.toml: "Installable package metadata."
+      README.md: "Scientific API documentation."
+    source:
+      path: packages/experiment_os_stats/src/experiment_os_stats/
+      files:
+        __init__.py: "Public exports."
+        types.py: "Enums and type aliases."
+        exceptions.py: "Domain errors."
+        results.py: "Standardized result models."
+      modules:
+        data:
+          path: packages/experiment_os_stats/src/experiment_os_stats/data/
+          files:
+            validation.py: "Sample and metric validation."
+            normalization.py: "Binary and continuous normalization."
+        descriptive:
+          path: packages/experiment_os_stats/src/experiment_os_stats/descriptive/
+          files:
+            binary.py: "Binary summaries."
+            continuous.py: "Continuous summaries."
+        simulation:
+          path: packages/experiment_os_stats/src/experiment_os_stats/simulation/
+          files:
+            binary.py: "Binary experiment generation."
+            continuous.py: "Continuous experiment generation."
+            contamination.py: "Missing values and outliers."
+        hypothesis_tests:
+          path: packages/experiment_os_stats/src/experiment_os_stats/hypothesis_tests/
+          files:
+            two_proportion_z.py: "Two-proportion z-test."
+            fisher_exact.py: "Fisher exact test."
+            student_t.py: "Student independent t-test."
+            welch_t.py: "Welch independent t-test."
+            mann_whitney.py: "Mann-Whitney U test."
+            permutation.py: "Permutation test."
+        bootstrap:
+          path: packages/experiment_os_stats/src/experiment_os_stats/bootstrap/
+          files:
+            difference.py: "Bootstrap difference of means or medians."
+            intervals.py: "Bootstrap confidence intervals."
+        effect_sizes:
+          path: packages/experiment_os_stats/src/experiment_os_stats/effect_sizes/
+          files:
+            binary.py: "Odds ratio, risk ratio and uplift."
+            continuous.py: "Cohen's d and rank effects."
+        diagnostics:
+          path: packages/experiment_os_stats/src/experiment_os_stats/diagnostics/
+          files:
+            sample_checks.py: "Small or degenerate sample warnings."
+            distribution_checks.py: "Data for visual diagnostics."
+        interpretation:
+          path: packages/experiment_os_stats/src/experiment_os_stats/interpretation/
+          files:
+            rules.py: "Deterministic decision rules."
+            templates.py: "Stable text templates."
+        reporting:
+          path: packages/experiment_os_stats/src/experiment_os_stats/reporting/
+          files:
+            payloads.py: "Serializable report payloads."
+            pdf.py: "PDF generation."
+    tests:
+      path: packages/experiment_os_stats/tests/
+      directories:
+        unit: packages/experiment_os_stats/tests/unit/
+        reference: packages/experiment_os_stats/tests/reference/
+        monte_carlo: packages/experiment_os_stats/tests/monte_carlo/
+        fixtures: packages/experiment_os_stats/tests/fixtures/
+
+  frontend:
+    path: frontend/
+    responsibility: "React user interface."
+    files:
+      Dockerfile: "Frontend image."
+      package.json: "Dependencies and scripts."
+      vite.config.js: "Vite and API proxy."
+      tailwind.config.js: "Tailwind configuration."
+      components.json: "shadcn/ui configuration."
+    source:
+      path: frontend/src/
+      files:
+        main.jsx: "React bootstrap."
+        App.jsx: "Top-level layout and routes."
+        index.css: "Tailwind and global styles."
+      directories:
+        api:
+          path: frontend/src/api/
+          files:
+            client.js: "HTTP client."
+            simulations.js: "Simulation requests."
+            datasets.js: "CSV requests."
+            analyses.js: "Analysis requests."
+            exports.js: "Export requests."
+        components:
+          path: frontend/src/components/
+          directories:
+            ui: frontend/src/components/ui/
+            forms: frontend/src/components/forms/
+            results: frontend/src/components/results/
+            charts: frontend/src/components/charts/
+            layout: frontend/src/components/layout/
+        features:
+          path: frontend/src/features/
+          directories:
+            simulation: frontend/src/features/simulation/
+            csv_import: frontend/src/features/csv_import/
+            analysis: frontend/src/features/analysis/
+            reporting: frontend/src/features/reporting/
+        hooks:
+          path: frontend/src/hooks/
+        lib:
+          path: frontend/src/lib/
+          files:
+            utils.js: "Shared UI utilities."
+            constants.js: "Stable frontend constants."
+            resultFormatters.js: "Display-only formatting."
+        pages:
+          path: frontend/src/pages/
+          files:
+            HomePage.jsx: "Choose simulation or import."
+            SimulationPage.jsx: "Simulation workflow."
+            ImportPage.jsx: "CSV workflow."
+            AnalysisPage.jsx: "Manual test selection."
+            ResultsPage.jsx: "Results, charts and exports."
+        tests:
+          path: frontend/src/tests/
+
+  additional:
+    integration_tests:
+      path: tests/integration/
+      responsibility: "API and Docker-level tests."
+    scripts:
+      path: scripts/
+      files:
+        check_compose.sh: "Validate Compose."
+        run_scientific_validation.py: "Run long Monte-Carlo checks."
+        generate_example_csv.py: "Generate example datasets."
+    examples:
+      path: examples/
+      files:
+        binary_ab.csv: "Binary import example."
+        continuous_ab.csv: "Continuous import example."
+    docs:
+      path: docs/
+      files:
+        statistical-methods.md: "Methods, formulas and assumptions."
+        csv-format.md: "CSV import guide."
+        interpretation-guide.md: "Correct result interpretation."
+    workflows:
+      path: .github/workflows/
+      files:
+        backend.yml: "Python lint, tests and coverage."
+        frontend.yml: "JavaScript lint, tests and build."
+        docker.yml: "Docker builds and Compose validation."
+
+dependency_rules:
+  statistics_library:
+    may_depend_on:
+      - numpy
+      - pandas
+      - scipy
+      - statsmodels
+    must_not_depend_on:
+      - fastapi
+      - frontend
+  backend:
+    may_depend_on:
+      - statistics_library
+      - fastapi
+      - pydantic
+    must_not_depend_on:
+      - frontend
+  frontend:
+    may_depend_on:
+      - backend_http_contracts
+    must_not_contain:
+      - authoritative_statistical_calculations
+
+data_flows:
+  simulation:
+    - frontend_form
+    - backend_validation
+    - statistics_library_simulation
+    - normalized_dataset
+    - descriptive_statistics
+    - manually_selected_test
+    - standardized_result
+    - deterministic_interpretation
+    - frontend_visualization
+    - optional_export
+  csv_import:
+    - csv_upload
+    - backend_preview
+    - frontend_manual_mapping
+    - backend_normalization
+    - normalized_dataset
+    - descriptive_statistics
+    - manually_selected_test
+    - standardized_result
+    - deterministic_interpretation
+    - frontend_visualization
+    - optional_export
+
+quality_gates:
+  python:
+    lint: ruff
+    tests: pytest
+    coverage_target_percent: 85
+  javascript:
+    lint: eslint
+    tests: vitest
+    components: react-testing-library
+  scientific:
+    references:
+      - scipy
+      - statsmodels
+    required_checks:
+      - known_cases
+      - false_positive_rate
+      - confidence_interval_coverage
+      - empirical_power
+      - fixed_seed_reproducibility
+  containers:
+    - backend_image_builds
+    - frontend_image_builds
+    - docker_compose_config_is_valid
+
+version_1_non_goals:
+  - authentication
+  - database
+  - persistent_history
+  - cloud_deployment
+  - abn_experiments
+  - sequential_testing
+  - bayesian_inference
+  - llm_generated_interpretation
+  - dynamic_plugin_system

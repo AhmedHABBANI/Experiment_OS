@@ -1,0 +1,28 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "experiment-os-backend"
+version = "0.1.0"
+description = "FastAPI backend for ExperimentOS."
+requires-python = ">=3.12"
+
+dependencies = [
+    "experiment-os-stats",
+    "fastapi>=0.115",
+    "pydantic>=2.9",
+    "uvicorn[standard]>=0.32",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27",
+    "pytest>=8.0",
+    "ruff>=0.8",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "app",
+]
