@@ -311,8 +311,12 @@ function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
       <h3>Analysis settings</h3>
       <label className="field">
         <span>Test</span>
-        <select value={analysis.test} disabled>
+        <select
+          value={analysis.test}
+          onChange={(event) => onAnalysisChange({ ...analysis, test: event.target.value })}
+        >
           <option value="student-t">Student t-test</option>
+          <option value="welch-t">Welch t-test</option>
         </select>
       </label>
       <label className="field">

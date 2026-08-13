@@ -11,6 +11,7 @@ from app.services.analysis_service import (
     run_fisher_exact_analysis,
     run_student_t_analysis,
     run_two_proportion_z_analysis,
+    run_welch_t_analysis,
 )
 
 router = APIRouter()
@@ -38,3 +39,11 @@ def analyze_student_t(
 ) -> StatisticalAnalysisResponse:
     """Run Student's independent two-sample t-test on continuous groups."""
     return run_student_t_analysis(request)
+
+
+@router.post("/welch-t", response_model=StatisticalAnalysisResponse)
+def analyze_welch_t(
+    request: ContinuousAnalysisRequest,
+) -> StatisticalAnalysisResponse:
+    """Run Welch's independent two-sample t-test on continuous groups."""
+    return run_welch_t_analysis(request)

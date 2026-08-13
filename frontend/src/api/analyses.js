@@ -29,5 +29,6 @@ export function analyzeBinaryExperiment(simulation, options) {
 }
 
 export function analyzeContinuousExperiment(simulation, options) {
-  return postAnalysis("/analyses/student-t", simulation, options);
+  const path = options.test === "welch-t" ? "/analyses/welch-t" : "/analyses/student-t";
+  return postAnalysis(path, simulation, options);
 }

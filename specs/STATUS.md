@@ -294,9 +294,34 @@ Phase 9 - Interface completion in progress
 - Continuous datasets with fewer than two retained observations in either group remain available for descriptive exploration without attempting an invalid Student analysis
 - Full deterministic interpretation fields displayed when available in the shared analysis-result panel
 - Student analysis workflow covered end to end from frontend request through API delegation
+- `POST /api/v1/analyses/welch-t` implemented with the shared typed continuous-analysis request
+- Welch API service delegates all statistical calculations to `experiment_os_stats.welch_t_test`
+- Continuous-test selector now offers manual Student or Welch selection without visual redesign
+- Frontend continuous-analysis client routes Student and Welch selections to their respective endpoints
+- Welch responses reuse the shared result, warning and deterministic-interpretation panels
+- Welch endpoint exposes Welch-Satterthwaite metadata and preserves B-minus-A orientation
 
 ## Validation
 
+- Phase 9 Welch-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
+- Phase 9 Welch-workflow initial Docker `ruff check .`: passed
+- Phase 9 Welch-workflow initial Docker `pytest`: passed, 345 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 9 Welch-workflow initial Docker coverage validation: passed, 345 tests, 98.99% `experiment_os_stats` coverage
+- Phase 9 Welch-workflow initial frontend `npm.cmd run lint`: passed
+- Phase 9 Welch-workflow initial frontend tests: passed, 3 test files and 8 tests
+- Phase 9 Welch-workflow initial frontend build: passed with the existing large Plotly bundle warning
+- Targeted Welch backend validation: passed, 8 tests; Ruff passed on all touched backend Python files
+- Targeted Student/Welch frontend validation: passed, 4 test files and 11 tests; ESLint passed
+- Final Docker `ruff format .`: passed, 92 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 347 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 347 tests, 98.99% `experiment_os_stats` coverage, 1 existing Starlette/httpx deprecation warning
+- Final frontend `npm.cmd run lint`: passed
+- Final frontend `npm.cmd run test -- --run`: passed, 4 test files and 11 tests
+- Final frontend `npm.cmd run build`: passed with the existing large Plotly bundle warning; main JavaScript bundle is about 5.11 MB before gzip
+- Final `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- First Welch runtime request: returned transient HTTP 502 because it ran while the backend container was still restarting
+- Welch runtime retry after container readiness: passed through the frontend proxy with `welch_t_test`, B-minus-A estimate 6.5, Welch interval, Welch-Satterthwaite metadata and rejection decision
 - Phase 9 Student-workflow initial Docker `ruff format --check .`: passed, 91 files already formatted
 - Phase 9 Student-workflow initial Docker `ruff check .`: passed
 - Phase 9 Student-workflow initial Docker `pytest`: passed, 339 tests, 1 existing Starlette/httpx deprecation warning
@@ -721,16 +746,17 @@ Phase 9 - Interface completion in progress
 - `packages/experiment_os_stats/tests/test_permutation_interpretation.py`
 - `packages/experiment_os_stats/tests/test_bootstrap_interpretation.py`
 - `backend/tests/test_continuous_analyses_api.py`
+- `frontend/src/tests/analyses.test.js`
 
 ## Current milestone status
 
-- Phase 9 first milestone completed: end-to-end Student t-test workflow for continuous data
+- Phase 9 second milestone completed: end-to-end Welch t-test workflow for continuous data
 
 ## Next milestone
 
-Continue Phase 9 with a limited Welch t-test workflow:
+Continue Phase 9 with a limited Mann-Whitney workflow:
 
-- add a typed Welch API endpoint delegating to `experiment_os_stats.welch_t_test`
-- add Welch to the manual continuous-test selector
+- add a typed Mann-Whitney API endpoint delegating to `experiment_os_stats.mann_whitney_test`
+- add Mann-Whitney to the manual continuous-test selector
 - reuse the shared result and deterministic-interpretation panels
-- cover API errors and the frontend selection workflow without implementing Mann-Whitney or resampling methods in the same milestone
+- cover API errors and the frontend selection workflow without implementing permutation or bootstrap in the same milestone

@@ -140,7 +140,7 @@ describe("App", () => {
     expect(screen.getByRole("heading", { name: "Continuous simulation" })).toBeInTheDocument();
     expect(screen.getByLabelText("Distribution")).toBeInTheDocument();
     expect(screen.getByLabelText("Test")).toHaveValue("student-t");
-    expect(screen.getByLabelText("Test")).toBeDisabled();
+    expect(screen.getByRole("option", { name: "Welch t-test" })).toBeInTheDocument();
   });
 
   it("runs a continuous simulation with the Student t-test", async () => {
@@ -230,6 +230,14 @@ describe("App", () => {
         body: expect.stringContaining('"alternative":"greater"')
       })
     );
+  });
+
+  it("allows the user to select Welch manually", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Continuous" }));
+    fireEvent.change(screen.getByLabelText("Test"), { target: { value: "welch-t" } });
+
+    expect(screen.getByLabelText("Test")).toHaveValue("welch-t");
   });
 
   it("allows the user to select Fisher exact manually", () => {

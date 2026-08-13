@@ -32,6 +32,44 @@ def test_student_t_endpoint_returns_shared_result() -> None:
     assert payload["interpretation"]["decision"]
 
 
+def test_welch_t_endpoint_returns_shared_result() -> None:
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/api/v1/analyses/welch-t",
+        json={
+            "group_a": [1.0, 2.0, 3.0, 4.0],
+            "group_b": [5.0, 7.0, 9.0, 11.0, 13.0],
+            "alpha": 0.05,
+            "alternative": "greater",
+        },
+    )
+    payload = response.json()
+
+    assert response.status_code == 200
+    assert payload["test_name"] == "welch_t_test"
+    assert payload["metric_type"] == "continuous"
+    assert payload["alternative"] == "greater"
+    assert payload["estimate"] == pytest.approx(6.5)
+    assert payload["reject_null"] is True
+    assert payload["confidence_interval"]["method"] == "welch_t"
+    assert payload["effect_size_name"] == "cohens_d"
+    assert payload["metadata"]["degrees_of_freedom_method"] == "welch_satterthwaite"
+    assert payload["metadata"]["difference_direction"] == "group_b_minus_group_a"
+
+
+def test_welch_t_endpoint_returns_structured_degenerate_error() -> None:
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/api/v1/analyses/welch-t",
+        json={"group_a": [1.0, 1.0], "group_b": [2.0, 2.0]},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "DEGENERATE_SAMPLE_ERROR"
+
+
 def test_student_t_endpoint_returns_structured_degenerate_error() -> None:
     client = TestClient(create_app())
 
