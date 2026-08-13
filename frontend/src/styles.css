@@ -41,6 +41,12 @@ button {
   margin-bottom: 18px;
 }
 
+.result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: #52636d;

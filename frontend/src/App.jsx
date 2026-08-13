@@ -3,12 +3,14 @@ import { useMemo, useState } from "react";
 import { analyzeBinaryExperiment, analyzeContinuousExperiment } from "./api/analyses.js";
 import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/descriptive.js";
 import { fetchBinaryDiagnostics, fetchContinuousDiagnostics } from "./api/diagnostics.js";
+import { exportJsonReport } from "./api/exports.js";
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
 import AnalysisResult from "./components/AnalysisResult.jsx";
 import CsvImportPanel from "./components/CsvImportPanel.jsx";
 import DiagnosticCharts from "./components/DiagnosticCharts.jsx";
 import ResamplingChart from "./components/ResamplingChart.jsx";
 import { downloadCsv, simulationToCsv } from "./lib/csv.js";
+import { downloadJson } from "./lib/json.js";
 
 const initialBinaryForm = {
   n_a: 100,
@@ -147,6 +149,30 @@ export default function App() {
     downloadCsv(`experiment-os-${result.metric_type}-simulation.csv`, simulationToCsv(result));
   }
 
+  async function handleJsonExport() {
+    if (!result || !descriptiveSummary || !analysisResult) {
+      return;
+    }
+
+    setError("");
+    try {
+      const configuration = {
+        simulation: source === "simulation" ? activeForm : null,
+        analysis: mode === "binary" ? binaryAnalysis : continuousAnalysis
+      };
+      const content = await exportJsonReport({
+        source: result.metadata?.source === "csv_import" ? "csv_import" : "simulation",
+        configuration,
+        dataset: result,
+        descriptive_summary: descriptiveSummary,
+        analysis_result: analysisResult
+      });
+      downloadJson("experiment-os-report.json", content);
+    } catch (caughtError) {
+      setError(caughtError.message);
+    }
+  }
+
   return (
     <main className="app-shell">
       <section className="workspace" aria-labelledby="page-title">
@@ -216,9 +242,16 @@ export default function App() {
                     <p className="eyebrow">{result.metric_type}</p>
                     <h2>{source === "simulation" ? "Generated dataset" : "Imported dataset"}</h2>
                   </div>
-                  <button type="button" className="secondary-action" onClick={handleDownload}>
-                    Download CSV
-                  </button>
+                  <div className="result-actions">
+                    <button type="button" className="secondary-action" onClick={handleDownload}>
+                      Download CSV
+                    </button>
+                    {analysisResult ? (
+                      <button type="button" className="secondary-action" onClick={handleJsonExport}>
+                        Download JSON
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
                 <MetadataGrid metadata={result.metadata} />
                 {result.metadata?.source === "csv_import" ? <ImportSummary metadata={result.metadata} /> : null}

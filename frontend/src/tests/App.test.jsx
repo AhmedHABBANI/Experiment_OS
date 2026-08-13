@@ -108,6 +108,7 @@ describe("App", () => {
 
     await waitFor(() => expect(screen.getByText("Generated dataset")).toBeInTheDocument());
     expect(screen.getByRole("button", { name: "Download CSV" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Download JSON" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Group summaries" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Comparison" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Distribution diagnostics" })).toBeInTheDocument();

@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 9 - Interface completion in progress
+Phase 10 - Exports in progress
 
 ## Completed
 
@@ -331,9 +331,37 @@ Phase 9 - Interface completion in progress
 - Resampling charts consume authoritative result metadata without browser-side statistical calculations
 - Permutation and bootstrap charts include deterministic accessible textual summaries
 - Resampling charts remain absent for analyses without resampling distributions
+- `POST /api/v1/exports/json` implemented with typed request and response contracts
+- Versioned JSON report schema implemented with application identity and UTC export timestamp
+- JSON reports include source, active configuration, normalized dataset, descriptive summary and standardized analysis result
+- Statistical results, interpretations, assumptions, warnings and metadata remain unchanged in the exported report
+- JSON export response exposes an attachment filename without writing data to disk
+- Frontend JSON-export client implemented without reconstructing the server artifact
+- Browser-side JSON download implemented through a temporary object URL
+- JSON download action appears only when a complete analysis result is available
 
 ## Validation
 
+- Phase 10 JSON-export initial Docker `ruff format --check .`: passed, 92 files already formatted
+- Phase 10 JSON-export initial Docker `ruff check .`: passed
+- Phase 10 JSON-export initial Docker `pytest`: passed, 367 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 10 JSON-export initial Docker coverage validation: passed, 367 tests, 98.99% `experiment_os_stats` coverage
+- Phase 10 JSON-export initial frontend `npm.cmd run lint`: passed
+- Phase 10 JSON-export initial frontend tests: passed, 6 test files and 23 tests
+- Phase 10 JSON-export initial frontend build: passed with the existing Plotly chunk-size warning
+- Targeted JSON-export backend validation: passed, 2 tests; Ruff passed on all new and touched backend Python files
+- Targeted JSON-export frontend validation: passed, 8 test files and 26 tests; ESLint passed
+- Final Docker `ruff format .`: passed, 96 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 369 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker coverage validation: passed, 369 tests, 98.99% `experiment_os_stats` coverage
+- Final frontend `npm.cmd run lint`: passed
+- Final frontend tests: passed, 8 test files and 26 tests
+- Final frontend build: passed with the existing Plotly chunk-size warning (about 5.12 MB before gzip)
+- `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- First runtime header probe: body validation passed through `Invoke-RestMethod`, while a separate `curl.exe` request returned 422 because PowerShell quoting altered the JSON command argument
+- Corrected runtime verification through standard input: export returned 200, `application/json`, and attachment filename `experiment-os-report.json`
+- Runtime JSON values matched the request exactly for test name, statistic `2.345678`, p-value `0.019876`, estimate `1.25` and seed `42`
 - Phase 9 resampling-visualization initial Docker `ruff format --check .`: passed, 92 files already formatted
 - Phase 9 resampling-visualization initial Docker `ruff check .`: passed
 - Phase 9 resampling-visualization initial Docker `pytest`: passed, 367 tests, 1 existing Starlette/httpx deprecation warning
@@ -852,24 +880,31 @@ Phase 9 - Interface completion in progress
 
 ## Files modified in the current milestone
 
+- `backend/app/api/router.py`
 - `frontend/src/App.jsx`
 - `frontend/src/styles.css`
 - `specs/STATUS.md`
 
 ## Files added in the current milestone
 
-- `frontend/src/components/ResamplingChart.jsx`
-- `frontend/src/tests/ResamplingChart.test.jsx`
+- `backend/app/api/v1/exports.py`
+- `backend/app/schemas/exports.py`
+- `backend/app/services/export_service.py`
+- `backend/tests/test_json_export.py`
+- `frontend/src/api/exports.js`
+- `frontend/src/lib/json.js`
+- `frontend/src/tests/exports.test.js`
+- `frontend/src/tests/json.test.js`
 
 ## Current milestone status
 
-- Phase 9 sixth milestone completed: permutation and bootstrap distribution visualizations
+- Phase 10 first milestone completed: typed, downloadable JSON report export
 
 ## Next milestone
 
-Start Phase 10 with a limited JSON-export workflow:
+Continue Phase 10 with a limited flattened-results CSV export workflow:
 
-- define a typed export request containing dataset metadata, analysis options and standardized results
-- generate a downloadable JSON artifact without persistence
-- verify that exported statistical values exactly match the API result
-- defer CSV and PDF exports to separate later milestones
+- reuse the established report request as the authoritative input
+- flatten descriptive and statistical scalar results into a stable CSV contract
+- verify CSV values against the JSON reference report
+- defer analyzed-data CSV and PDF exports to separate later milestones
