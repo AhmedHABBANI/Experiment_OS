@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 8 - Deterministic binary, parametric, rank-based and permutation interpretation completed
+Phase 8 - Deterministic interpretation completed
 
 ## Completed
 
@@ -277,9 +277,27 @@ Phase 8 - Deterministic binary, parametric, rank-based and permutation interpret
 - Fixed-seed reproducibility and unseeded non-reproducibility are stated explicitly
 - Directional permutation alternatives generate matching hypotheses
 - Permutation practical significance remains unassessed without a domain threshold
+- Deterministic bootstrap mean-difference interpretation implemented
+- Deterministic bootstrap median-difference interpretation implemented
+- Bootstrap effects consistently describe group B minus group A for the selected estimand
+- Bootstrap interpretations explicitly preserve their estimation-only contract without p-values or hypothesis-test decisions
+- Percentile intervals are contextualized as above zero, below zero or including zero
+- Bootstrap standard error, replication count and confidence level are reported deterministically
+- Fixed-seed reproducibility and unseeded non-reproducibility are stated explicitly for bootstrap estimates
+- Bootstrap practical significance remains unassessed without a domain threshold
 
 ## Validation
 
+- Phase 8 bootstrap-interpretation initial Docker `ruff format --check .`: passed, 90 files already formatted
+- Phase 8 bootstrap-interpretation initial Docker `ruff check .`: passed
+- Phase 8 bootstrap-interpretation initial Docker `pytest`: passed, 333 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 8 bootstrap-interpretation initial Docker coverage validation: passed, 333 tests, 98.97% `experiment_os_stats` coverage
+- First targeted bootstrap validation: stopped before tests after Ruff found one long line and one unsorted import block
+- Targeted bootstrap and interpretation validation after style correction: passed, 39 tests; Ruff passed on all touched Python files
+- Final Docker `ruff format .`: passed, 91 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 339 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 339 tests, 98.99% `experiment_os_stats` coverage, 1 existing Starlette/httpx deprecation warning
 - Phase 8 permutation-interpretation initial Docker validation: passed, 326 tests, 99.21% `experiment_os_stats` coverage
 - Local targeted Ruff attempt: not executed because `ruff` is not available in the Windows `PATH`
 - First targeted Docker attempt: stopped before validation because the base image did not contain `ruff`
@@ -670,16 +688,17 @@ Phase 8 - Deterministic binary, parametric, rank-based and permutation interpret
 - `packages/experiment_os_stats/tests/test_mann_whitney_interpretation.py`
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/resampling.py`
 - `packages/experiment_os_stats/tests/test_permutation_interpretation.py`
+- `packages/experiment_os_stats/tests/test_bootstrap_interpretation.py`
 
 ## Current milestone status
 
-- Phase 8 fourth milestone completed: structured deterministic interpretation for the permutation mean test
+- Phase 8 completed: structured deterministic interpretations cover every implemented statistical method
 
 ## Next milestone
 
-Continue Phase 8 with a limited bootstrap interpretation milestone:
+Begin Phase 9 with a limited interface-completeness audit and its first incomplete workflow:
 
-- apply the structured interpretation contract to bootstrap mean and median estimates
-- describe observed B-minus-A effects and percentile confidence intervals
-- contextualize bootstrap replication count, standard error and reproducibility seed
-- preserve the absence of p-values and null-hypothesis decisions for estimation-only procedures
+- compare the existing frontend workflows with the Phase 9 page, component and state requirements
+- identify the first incomplete end-to-end analysis workflow from the real code
+- expose no statistical calculation in React and continue delegating calculations through the API
+- implement only that first incomplete workflow as a limited milestone

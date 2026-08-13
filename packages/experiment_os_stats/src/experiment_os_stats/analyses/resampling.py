@@ -8,7 +8,10 @@ from experiment_os_stats.analyses._common import normalize_alternative, validate
 from experiment_os_stats.data.normalization import SampleLike
 from experiment_os_stats.data.validation import validate_ab_samples
 from experiment_os_stats.exceptions import DegenerateSampleError, InvalidParameterError
-from experiment_os_stats.interpretation import interpret_permutation_mean_result
+from experiment_os_stats.interpretation import (
+    interpret_bootstrap_difference_result,
+    interpret_permutation_mean_result,
+)
 from experiment_os_stats.results import ConfidenceInterval, StatisticalResult
 from experiment_os_stats.types import Alternative, MetricType, MissingValuePolicy
 
@@ -248,13 +251,16 @@ def bootstrap_mean_difference(
             "Observations within each group are representative and identically distributed.",
             "The empirical group distributions approximate their populations.",
         ),
-        interpretation={
-            "estimand": "The population mean difference, group B minus group A.",
-            "interval": (
-                "The percentile interval describes bootstrap uncertainty around the "
-                "estimated mean difference."
-            ),
-        },
+        interpretation=interpret_bootstrap_difference_result(
+            estimand="mean",
+            estimate=estimate,
+            lower=lower,
+            upper=upper,
+            confidence_level=confidence_level,
+            standard_error=standard_error,
+            n_resamples=n_resamples,
+            seed=seed,
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,
@@ -326,13 +332,16 @@ def bootstrap_median_difference(
             "Observations within each group are representative and identically distributed.",
             "The empirical group distributions approximate their populations.",
         ),
-        interpretation={
-            "estimand": "The population median difference, group B minus group A.",
-            "interval": (
-                "The percentile interval describes bootstrap uncertainty around the "
-                "estimated median difference."
-            ),
-        },
+        interpretation=interpret_bootstrap_difference_result(
+            estimand="median",
+            estimate=estimate,
+            lower=lower,
+            upper=upper,
+            confidence_level=confidence_level,
+            standard_error=standard_error,
+            n_resamples=n_resamples,
+            seed=seed,
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,
