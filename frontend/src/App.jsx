@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { analyzeBinaryExperiment, analyzeContinuousExperiment } from "./api/analyses.js";
 import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/descriptive.js";
 import { fetchBinaryDiagnostics, fetchContinuousDiagnostics } from "./api/diagnostics.js";
-import { exportJsonReport } from "./api/exports.js";
+import { exportJsonReport, exportResultsCsv } from "./api/exports.js";
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
 import AnalysisResult from "./components/AnalysisResult.jsx";
 import CsvImportPanel from "./components/CsvImportPanel.jsx";
@@ -156,21 +156,38 @@ export default function App() {
 
     setError("");
     try {
-      const configuration = {
-        simulation: source === "simulation" ? activeForm : null,
-        analysis: mode === "binary" ? binaryAnalysis : continuousAnalysis
-      };
-      const content = await exportJsonReport({
-        source: result.metadata?.source === "csv_import" ? "csv_import" : "simulation",
-        configuration,
-        dataset: result,
-        descriptive_summary: descriptiveSummary,
-        analysis_result: analysisResult
-      });
+      const content = await exportJsonReport(buildReportPayload());
       downloadJson("experiment-os-report.json", content);
     } catch (caughtError) {
       setError(caughtError.message);
     }
+  }
+
+  async function handleResultsCsvExport() {
+    if (!result || !descriptiveSummary || !analysisResult) {
+      return;
+    }
+
+    setError("");
+    try {
+      const content = await exportResultsCsv(buildReportPayload());
+      downloadCsv("experiment-os-results.csv", content);
+    } catch (caughtError) {
+      setError(caughtError.message);
+    }
+  }
+
+  function buildReportPayload() {
+    return {
+      source: result.metadata?.source === "csv_import" ? "csv_import" : "simulation",
+      configuration: {
+        simulation: source === "simulation" ? activeForm : null,
+        analysis: mode === "binary" ? binaryAnalysis : continuousAnalysis
+      },
+      dataset: result,
+      descriptive_summary: descriptiveSummary,
+      analysis_result: analysisResult
+    };
   }
 
   return (
@@ -247,9 +264,14 @@ export default function App() {
                       Download CSV
                     </button>
                     {analysisResult ? (
-                      <button type="button" className="secondary-action" onClick={handleJsonExport}>
-                        Download JSON
-                      </button>
+                      <>
+                        <button type="button" className="secondary-action" onClick={handleJsonExport}>
+                          Download JSON
+                        </button>
+                        <button type="button" className="secondary-action" onClick={handleResultsCsvExport}>
+                          Download results CSV
+                        </button>
+                      </>
                     ) : null}
                   </div>
                 </div>

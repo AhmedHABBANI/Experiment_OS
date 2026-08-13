@@ -339,9 +339,34 @@ Phase 10 - Exports in progress
 - Frontend JSON-export client implemented without reconstructing the server artifact
 - Browser-side JSON download implemented through a temporary object URL
 - JSON download action appears only when a complete analysis result is available
+- `POST /api/v1/exports/csv` implemented from the authoritative JSON-report request contract
+- Flattened results CSV uses a stable `field,value` layout with deterministic dotted paths
+- Scalar values preserve their report representation; booleans are lowercase and missing values are empty
+- Structured list values are preserved as compact JSON instead of being discarded
+- CSV response exposes the attachment filename `experiment-os-results.csv` without persistent storage
+- Frontend results-CSV client and download action implemented for complete analyses
 
 ## Validation
 
+- Phase 10 results-CSV initial Docker `ruff format --check .`: passed, 96 files already formatted
+- Phase 10 results-CSV initial Docker `ruff check .`: passed
+- Phase 10 results-CSV initial Docker `pytest`: passed, 369 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 10 results-CSV initial Docker coverage validation: passed, 369 tests, 98.99% `experiment_os_stats` coverage
+- Phase 10 results-CSV initial frontend lint: passed
+- Phase 10 results-CSV initial frontend tests: passed, 8 test files and 26 tests
+- Phase 10 results-CSV initial frontend build: passed with the existing Plotly chunk-size warning
+- Targeted results-CSV backend validation: passed, 3 tests; Ruff passed on all touched backend Python files
+- Targeted results-CSV frontend validation: passed, 2 test files and 13 tests; ESLint passed
+- Final results-CSV Docker `ruff format .`: passed, 96 files left unchanged
+- Final results-CSV Docker `ruff check .`: passed
+- Final results-CSV Docker `pytest`: passed, 370 tests, 1 existing Starlette/httpx deprecation warning
+- Final results-CSV Docker coverage validation: passed, 370 tests, 98.99% `experiment_os_stats` coverage
+- Final results-CSV frontend lint: passed
+- Final results-CSV frontend tests: passed, 8 test files and 27 tests
+- Final results-CSV frontend build: passed with the existing Plotly chunk-size warning (about 5.12 MB before gzip)
+- Results-CSV `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- Runtime results-CSV verification: returned 200, `text/csv; charset=utf-8`, and attachment filename `experiment-os-results.csv`
+- Runtime CSV values matched the request exactly for test name, statistic `2.345678`, p-value `0.019876`, estimate `1.25`, decision `true` and seed `42`
 - Phase 10 JSON-export initial Docker `ruff format --check .`: passed, 92 files already formatted
 - Phase 10 JSON-export initial Docker `ruff check .`: passed
 - Phase 10 JSON-export initial Docker `pytest`: passed, 367 tests, 1 existing Starlette/httpx deprecation warning
@@ -880,31 +905,28 @@ Phase 10 - Exports in progress
 
 ## Files modified in the current milestone
 
-- `backend/app/api/router.py`
+- `backend/app/api/v1/exports.py`
+- `backend/app/services/export_service.py`
+- `backend/tests/test_json_export.py`
 - `frontend/src/App.jsx`
-- `frontend/src/styles.css`
+- `frontend/src/api/exports.js`
+- `frontend/src/tests/App.test.jsx`
+- `frontend/src/tests/exports.test.js`
 - `specs/STATUS.md`
 
 ## Files added in the current milestone
 
-- `backend/app/api/v1/exports.py`
-- `backend/app/schemas/exports.py`
-- `backend/app/services/export_service.py`
-- `backend/tests/test_json_export.py`
-- `frontend/src/api/exports.js`
-- `frontend/src/lib/json.js`
-- `frontend/src/tests/exports.test.js`
-- `frontend/src/tests/json.test.js`
+- None
 
 ## Current milestone status
 
-- Phase 10 first milestone completed: typed, downloadable JSON report export
+- Phase 10 second milestone completed: typed, downloadable flattened-results CSV export
 
 ## Next milestone
 
-Continue Phase 10 with a limited flattened-results CSV export workflow:
+Continue Phase 10 with a separate analyzed-data CSV export workflow:
 
-- reuse the established report request as the authoritative input
-- flatten descriptive and statistical scalar results into a stable CSV contract
-- verify CSV values against the JSON reference report
-- defer analyzed-data CSV and PDF exports to separate later milestones
+- export normalized A/B observations in a tabular format suitable for downstream analysis
+- define a stable column contract for binary and continuous datasets
+- verify row counts, group labels, missing-value handling and exact normalized values
+- defer PDF report export to its own later milestone

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { exportJsonReport } from "../api/exports.js";
+import { exportJsonReport, exportResultsCsv } from "../api/exports.js";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -37,5 +37,18 @@ describe("JSON export API client", () => {
     });
 
     await expect(exportJsonReport({})).rejects.toThrow("The report is incomplete.");
+  });
+
+  it("returns the flattened results CSV artifact unchanged", async () => {
+    const csv = "field,value\nanalysis_result.p_value,0.031\n";
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: true, text: async () => csv });
+
+    const content = await exportResultsCsv({ source: "simulation" });
+
+    expect(content).toBe(csv);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/exports/csv",
+      expect.objectContaining({ method: "POST" })
+    );
   });
 });

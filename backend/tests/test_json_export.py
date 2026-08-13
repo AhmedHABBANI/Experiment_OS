@@ -1,6 +1,8 @@
 """Tests for the versioned JSON export endpoint."""
 
+import csv
 from datetime import datetime
+from io import StringIO
 
 from fastapi.testclient import TestClient
 
@@ -80,3 +82,27 @@ def test_json_export_rejects_incomplete_result() -> None:
     response = client.post("/api/v1/exports/json", json=request)
 
     assert response.status_code == 422
+
+
+def test_results_csv_matches_json_reference_values() -> None:
+    client = TestClient(create_app())
+    request = _export_request()
+
+    json_response = client.post("/api/v1/exports/json", json=request)
+    csv_response = client.post("/api/v1/exports/csv", json=request)
+    reference = json_response.json()
+    rows = dict(csv.reader(StringIO(csv_response.text)))
+
+    assert csv_response.status_code == 200
+    assert csv_response.headers["content-type"].startswith("text/csv")
+    assert csv_response.headers["content-disposition"] == (
+        'attachment; filename="experiment-os-results.csv"'
+    )
+    assert rows["field"] == "value"
+    assert rows["analysis_result.test_name"] == reference["analysis_result"]["test_name"]
+    assert float(rows["analysis_result.statistic"]) == reference["analysis_result"]["statistic"]
+    assert float(rows["analysis_result.p_value"]) == reference["analysis_result"]["p_value"]
+    assert float(rows["analysis_result.estimate"]) == reference["analysis_result"]["estimate"]
+    assert rows["analysis_result.reject_null"] == "true"
+    assert rows["analysis_result.assumptions"] == '["The groups are independent."]'
+    assert rows["dataset.metadata.seed"] == str(reference["dataset"]["metadata"]["seed"])

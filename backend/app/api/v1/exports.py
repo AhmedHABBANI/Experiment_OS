@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Response
 
 from app.schemas.exports import JsonExportRequest, JsonExportResponse
-from app.services.export_service import build_json_export
+from app.services.export_service import build_json_export, build_results_csv
 
 router = APIRouter()
 
@@ -13,3 +13,13 @@ def export_json(request: JsonExportRequest, response: Response) -> JsonExportRes
     """Return a downloadable, self-contained JSON experiment report."""
     response.headers["Content-Disposition"] = 'attachment; filename="experiment-os-report.json"'
     return build_json_export(request)
+
+
+@router.post("/csv")
+def export_results_csv(request: JsonExportRequest) -> Response:
+    """Return flattened report results as a downloadable CSV artifact."""
+    return Response(
+        content=build_results_csv(request),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="experiment-os-results.csv"'},
+    )
