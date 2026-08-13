@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 8 - Deterministic binary and parametric continuous interpretation completed
+Phase 8 - Deterministic binary, parametric and rank-based interpretation completed
 
 ## Completed
 
@@ -262,8 +262,25 @@ Phase 8 - Deterministic binary and parametric continuous interpretation complete
 - Continuous non-rejection wording explicitly avoids accepting the null hypothesis
 - Sample-size imbalance and IQR outlier warnings contextualized in interpretations
 - Directional Student and Welch alternatives generate matching hypotheses
+- Deterministic Mann-Whitney interpretation implemented
+- Mann-Whitney question and alternative hypothesis expressed in terms of rank distributions
+- Rank-biserial correlation interpretation consistently oriented as group B relative to group A
+- Probability of superiority described with tied pairs contributing one half
+- Mann-Whitney interpretation explicitly avoids presenting the method as a median test
+- Missing rank-effect confidence interval disclosed as unquantified estimation uncertainty
+- Tie handling and distribution-shape limitations contextualized through structured warnings
+- Mann-Whitney practical significance remains unassessed without a domain threshold
 
 ## Validation
+
+- Phase 8 Mann-Whitney-interpretation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 79 files already formatted
+- Phase 8 Mann-Whitney-interpretation initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 8 Mann-Whitney-interpretation initial Docker validation: passed, 316 tests, 99.20% `experiment_os_stats` coverage
+- Targeted Mann-Whitney and interpretation validation: passed, 22 tests
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 81 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final Docker `pytest`: passed, 326 tests
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 326 tests, 99.21% `experiment_os_stats` coverage
 
 - Phase 8 continuous-interpretation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 76 files already formatted
 - Phase 8 continuous-interpretation initial `.\.venv\Scripts\ruff.exe check .`: passed
@@ -634,16 +651,18 @@ Phase 8 - Deterministic binary and parametric continuous interpretation complete
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/_common.py`
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/continuous.py`
 - `packages/experiment_os_stats/tests/test_continuous_interpretation.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/interpretation/nonparametric.py`
+- `packages/experiment_os_stats/tests/test_mann_whitney_interpretation.py`
 
 ## Current milestone status
 
-- Phase 8 second milestone completed: structured deterministic interpretation for Student and Welch analyses
+- Phase 8 third milestone completed: structured deterministic interpretation for Mann-Whitney
 
 ## Next milestone
 
-Continue Phase 8 with a limited Mann-Whitney interpretation milestone:
+Continue Phase 8 with a limited permutation interpretation milestone:
 
-- apply the structured interpretation contract to Mann-Whitney
-- describe rank-biserial correlation and probability of superiority without presenting the test as a median test
-- contextualize ties and distribution-shape limitations
-- cover significant, non-significant, directional and tied-data cases
+- apply the structured interpretation contract to the permutation mean test
+- describe the observed B-minus-A mean difference and empirical p-value
+- contextualize Monte-Carlo uncertainty, permutation count and reproducibility seed
+- cover significant, non-significant and directional alternatives

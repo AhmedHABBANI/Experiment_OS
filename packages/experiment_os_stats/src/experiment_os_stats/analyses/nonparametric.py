@@ -7,6 +7,7 @@ from experiment_os_stats.analyses._common import validate_alpha
 from experiment_os_stats.data.normalization import SampleLike
 from experiment_os_stats.data.validation import validate_ab_samples
 from experiment_os_stats.exceptions import DegenerateSampleError
+from experiment_os_stats.interpretation import interpret_mann_whitney_result
 from experiment_os_stats.results import StatisticalResult, StatisticalWarning
 from experiment_os_stats.types import Alternative, MetricType, MissingValuePolicy, WarningSeverity
 
@@ -99,17 +100,13 @@ def mann_whitney_u_test(
             "Observations can be ranked meaningfully across groups.",
         ),
         warnings=tuple(warnings),
-        interpretation={
-            "null_hypothesis": (
-                "A randomly selected observation from group B is equally likely to rank "
-                "above or below one from group A."
-            ),
-            "alternative_hypothesis": ("The distributions of ranks differ between groups A and B."),
-            "effect_direction": (
-                "Positive rank-biserial values favor higher ranks in group B; negative "
-                "values favor higher ranks in group A."
-            ),
-        },
+        interpretation=interpret_mann_whitney_result(
+            rank_biserial=rank_biserial,
+            probability_of_superiority=probability_of_superiority,
+            p_value=float(reference.pvalue),
+            alpha=alpha,
+            warnings=tuple(warnings),
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,
