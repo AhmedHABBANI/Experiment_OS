@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 
-import { analyzeBinaryExperiment } from "./api/analyses.js";
+import { analyzeBinaryExperiment, analyzeContinuousExperiment } from "./api/analyses.js";
 import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/descriptive.js";
 import { fetchBinaryDiagnostics, fetchContinuousDiagnostics } from "./api/diagnostics.js";
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
@@ -38,12 +38,19 @@ const initialBinaryAnalysis = {
   alpha: 0.05
 };
 
+const initialContinuousAnalysis = {
+  test: "student-t",
+  alternative: "two-sided",
+  alpha: 0.05
+};
+
 export default function App() {
   const [source, setSource] = useState("simulation");
   const [mode, setMode] = useState("binary");
   const [binaryForm, setBinaryForm] = useState(initialBinaryForm);
   const [continuousForm, setContinuousForm] = useState(initialContinuousForm);
   const [binaryAnalysis, setBinaryAnalysis] = useState(initialBinaryAnalysis);
+  const [continuousAnalysis, setContinuousAnalysis] = useState(initialContinuousAnalysis);
   const [result, setResult] = useState(null);
   const [descriptiveSummary, setDescriptiveSummary] = useState(null);
   const [diagnostics, setDiagnostics] = useState(null);
@@ -64,6 +71,10 @@ export default function App() {
   }
 
   async function processDataset(payload) {
+    const canRunContinuousAnalysis =
+      payload.metric_type === "continuous" &&
+      payload.group_a.length >= 2 &&
+      payload.group_b.length >= 2;
     const [summary, diagnosticData, statisticalAnalysis] = await Promise.all(
       payload.metric_type === "binary"
         ? [
@@ -71,7 +82,13 @@ export default function App() {
             fetchBinaryDiagnostics(payload),
             analyzeBinaryExperiment(payload, binaryAnalysis)
           ]
-        : [summarizeContinuousExperiment(payload), fetchContinuousDiagnostics(payload), null]
+        : [
+            summarizeContinuousExperiment(payload),
+            fetchContinuousDiagnostics(payload),
+            canRunContinuousAnalysis
+              ? analyzeContinuousExperiment(payload, continuousAnalysis)
+              : null
+          ]
     );
     setMode(payload.metric_type);
     setResult(payload);
@@ -165,7 +182,12 @@ export default function App() {
               {mode === "binary" ? (
                 <BinaryFields form={binaryForm} onChange={setBinaryForm} analysis={binaryAnalysis} onAnalysisChange={setBinaryAnalysis} />
               ) : (
-                <ContinuousFields form={continuousForm} onChange={setContinuousForm} />
+                <ContinuousFields
+                  form={continuousForm}
+                  onChange={setContinuousForm}
+                  analysis={continuousAnalysis}
+                  onAnalysisChange={setContinuousAnalysis}
+                />
               )}
               <button className="primary-action" type="submit" disabled={status === "loading"}>{status === "loading" ? "Running..." : "Run simulation"}</button>
             </form>
@@ -254,7 +276,7 @@ function BinaryFields({ form, onChange, analysis, onAnalysisChange }) {
   );
 }
 
-function ContinuousFields({ form, onChange }) {
+function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
   return (
     <>
       <h2>Continuous simulation</h2>
@@ -284,6 +306,34 @@ function ContinuousFields({ form, onChange }) {
         value={form.outlier_multiplier}
         step="0.1"
         onChange={onChange}
+      />
+      <div className="form-divider" />
+      <h3>Analysis settings</h3>
+      <label className="field">
+        <span>Test</span>
+        <select value={analysis.test} disabled>
+          <option value="student-t">Student t-test</option>
+        </select>
+      </label>
+      <label className="field">
+        <span>Alternative</span>
+        <select
+          value={analysis.alternative}
+          onChange={(event) =>
+            onAnalysisChange({ ...analysis, alternative: event.target.value })
+          }
+        >
+          <option value="two-sided">Two-sided</option>
+          <option value="greater">B greater than A</option>
+          <option value="less">B less than A</option>
+        </select>
+      </label>
+      <NumberField
+        label="Alpha"
+        name="alpha"
+        value={analysis.alpha}
+        step="0.01"
+        onChange={onAnalysisChange}
       />
     </>
   );

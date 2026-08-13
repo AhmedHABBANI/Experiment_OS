@@ -27,3 +27,7 @@ export function analyzeBinaryExperiment(simulation, options) {
   const path = options.test === "fisher-exact" ? "/analyses/fisher-exact" : "/analyses/two-proportion-z";
   return postAnalysis(path, simulation, options);
 }
+
+export function analyzeContinuousExperiment(simulation, options) {
+  return postAnalysis("/analyses/student-t", simulation, options);
+}

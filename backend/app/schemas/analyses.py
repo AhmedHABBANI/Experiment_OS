@@ -15,6 +15,16 @@ class BinaryAnalysisRequest(BaseModel):
     missing_policy: Literal["drop", "raise"] = "drop"
 
 
+class ContinuousAnalysisRequest(BaseModel):
+    """Request body shared by independent continuous A/B tests."""
+
+    group_a: list[float | None] = Field(min_length=2)
+    group_b: list[float | None] = Field(min_length=2)
+    alpha: float = Field(default=0.05, gt=0, lt=1)
+    alternative: Literal["two-sided", "greater", "less"] = "two-sided"
+    missing_policy: Literal["drop", "raise"] = "drop"
+
+
 class ConfidenceIntervalResponse(BaseModel):
     """Confidence interval returned by an analysis when applicable."""
 

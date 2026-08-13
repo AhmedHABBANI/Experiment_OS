@@ -139,6 +139,97 @@ describe("App", () => {
 
     expect(screen.getByRole("heading", { name: "Continuous simulation" })).toBeInTheDocument();
     expect(screen.getByLabelText("Distribution")).toBeInTheDocument();
+    expect(screen.getByLabelText("Test")).toHaveValue("student-t");
+    expect(screen.getByLabelText("Test")).toBeDisabled();
+  });
+
+  it("runs a continuous simulation with the Student t-test", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          metric_type: "continuous",
+          group_a: [9, 10, 11],
+          group_b: [12, 13, 14],
+          metadata: { source: "simulation", seed: 42, n_a: 3, n_b: 3 }
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          metric_type: "continuous",
+          group_a: { n: 3, mean: 10, median: 10, standard_deviation: 1, standard_error: 0.577, iqr: 1 },
+          group_b: { n: 3, mean: 13, median: 13, standard_deviation: 1, standard_error: 0.577, iqr: 1 },
+          comparison: { mean_difference: 3, median_difference: 3, mean_ratio: 1.3 }
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          histograms: { A: { bin_edges: [9, 11], counts: [3] }, B: { bin_edges: [12, 14], counts: [3] } },
+          boxplots: {
+            A: { minimum: 9, q1: 9.5, median: 10, q3: 10.5, maximum: 11 },
+            B: { minimum: 12, q1: 12.5, median: 13, q3: 13.5, maximum: 14 }
+          },
+          qq_plots: {
+            A: { theoretical_quantiles: [-1, 0, 1], sample_quantiles: [9, 10, 11] },
+            B: { theoretical_quantiles: [-1, 0, 1], sample_quantiles: [12, 13, 14] }
+          }
+        })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          test_name: "student_t_test",
+          metric_type: "continuous",
+          statistic: 3.674,
+          p_value: 0.021,
+          alpha: 0.05,
+          alternative: "greater",
+          estimate: 3,
+          confidence_interval: {
+            lower: 0.733,
+            upper: 5.267,
+            level: 0.95,
+            parameter: "difference_in_means_b_minus_a",
+            method: "student_t_pooled"
+          },
+          effect_size: 3,
+          effect_size_name: "cohens_d",
+          reject_null: true,
+          assumptions: [],
+          warnings: [],
+          interpretation: {
+            question: "Do the population means differ between groups A and B?",
+            null_hypothesis: "The population means are equal.",
+            alternative_hypothesis: "The population mean in B is greater than A.",
+            decision: "The data provide sufficient evidence to reject the null hypothesis.",
+            effect: "Group B's observed mean is 3 units higher than group A's.",
+            uncertainty: "The confidence interval lies entirely above zero.",
+            practical_significance: "Practical significance was not assessed."
+          },
+          metadata: { difference_direction: "group_b_minus_group_a" }
+        })
+      });
+
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Continuous" }));
+    fireEvent.change(screen.getByLabelText("Alternative"), { target: { value: "greater" } });
+    fireEvent.click(screen.getByRole("button", { name: "Run simulation" }));
+
+    await screen.findByRole("heading", { name: "Statistical analysis" });
+    expect(screen.getByText("Student T Test")).toBeInTheDocument();
+    expect(screen.getByText("Reject H0")).toBeInTheDocument();
+    expect(screen.getByLabelText("Deterministic interpretation")).toHaveTextContent(
+      "Group B's observed mean is 3 units higher"
+    );
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/analyses/student-t",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining('"alternative":"greater"')
+      })
+    );
   });
 
   it("allows the user to select Fisher exact manually", () => {

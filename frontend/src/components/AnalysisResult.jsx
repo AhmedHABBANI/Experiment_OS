@@ -37,12 +37,29 @@ export default function AnalysisResult({ result }) {
       ) : null}
 
       <div className="hypotheses">
+        {result.interpretation.question ? <p>{result.interpretation.question}</p> : null}
         <p>
           <strong>H0</strong> {result.interpretation.null_hypothesis}
         </p>
         <p>
           <strong>H1</strong> {result.interpretation.alternative_hypothesis}
         </p>
+      </div>
+
+      <div className="interpretation-summary" aria-label="Deterministic interpretation">
+        {[
+          ["decision", "Decision"],
+          ["effect", "Effect"],
+          ["uncertainty", "Uncertainty"],
+          ["practical_significance", "Practical significance"],
+          ["warning_context", "Warning context"]
+        ].map(([key, label]) =>
+          result.interpretation[key] ? (
+            <p key={key}>
+              <strong>{label}</strong> {result.interpretation[key]}
+            </p>
+          ) : null
+        )}
       </div>
 
       {result.warnings.length > 0 ? (

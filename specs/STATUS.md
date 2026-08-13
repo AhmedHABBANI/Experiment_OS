@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 8 - Deterministic interpretation completed
+Phase 9 - Interface completion in progress
 
 ## Completed
 
@@ -285,9 +285,40 @@ Phase 8 - Deterministic interpretation completed
 - Bootstrap standard error, replication count and confidence level are reported deterministically
 - Fixed-seed reproducibility and unseeded non-reproducibility are stated explicitly for bootstrap estimates
 - Bootstrap practical significance remains unassessed without a domain threshold
+- Phase 9 interface-completeness audit identified continuous statistical analysis as the first incomplete end-to-end workflow
+- `POST /api/v1/analyses/student-t` implemented with a typed continuous-analysis request
+- Student API service delegates all statistical calculations to `experiment_os_stats.student_t_test`
+- Student API responses reuse the shared statistical-result contract and structured domain errors
+- Frontend continuous Student t-test settings implemented with manual alternative and alpha controls
+- Simulated and imported continuous datasets reuse the same Student analysis client
+- Continuous datasets with fewer than two retained observations in either group remain available for descriptive exploration without attempting an invalid Student analysis
+- Full deterministic interpretation fields displayed when available in the shared analysis-result panel
+- Student analysis workflow covered end to end from frontend request through API delegation
 
 ## Validation
 
+- Phase 9 Student-workflow initial Docker `ruff format --check .`: passed, 91 files already formatted
+- Phase 9 Student-workflow initial Docker `ruff check .`: passed
+- Phase 9 Student-workflow initial Docker `pytest`: passed, 339 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 9 Student-workflow initial Docker coverage validation: passed, 339 tests, 98.99% `experiment_os_stats` coverage
+- Initial frontend `npm.cmd run lint`: passed
+- Initial sandboxed frontend test/build attempt: stopped before execution because esbuild could not read the Vite configuration under filesystem restrictions
+- Initial frontend validation with the required access: passed, 3 test files and 7 tests; production build passed with the existing large Plotly bundle warning
+- Targeted Student backend validation: passed, 15 tests; Ruff passed on all touched backend Python files
+- First frontend Student validation: ESLint passed; 7 tests passed and 1 existing CSV test failed because its mocks did not account for the new Student request
+- Continuous analysis guarded for groups below Student's minimum sample size, preserving descriptive CSV exploration
+- Targeted frontend validation after the small-sample correction: passed, 3 test files and 8 tests; ESLint passed
+- Targeted deterministic-interpretation display validation: passed, 3 test files and 8 tests; ESLint passed
+- Final Docker `ruff format .`: passed, 92 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 345 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 345 tests, 98.99% `experiment_os_stats` coverage, 1 existing Starlette/httpx deprecation warning
+- Final frontend `npm.cmd run lint`: passed
+- Final frontend `npm.cmd run test -- --run`: passed, 3 test files and 8 tests
+- Final frontend `npm.cmd run build`: passed with the existing large Plotly bundle warning; main JavaScript bundle is about 5.11 MB before gzip
+- Final `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- Runtime stack verification: frontend returned HTTP 200 and proxied Student analysis returned `student_t_test`, B-minus-A estimate 3.0, rejection decision and deterministic decision text
+- Browser visual verification was not executed because the in-app browser controller was unavailable in this session
 - Phase 8 bootstrap-interpretation initial Docker `ruff format --check .`: passed, 90 files already formatted
 - Phase 8 bootstrap-interpretation initial Docker `ruff check .`: passed
 - Phase 8 bootstrap-interpretation initial Docker `pytest`: passed, 333 tests, 1 existing Starlette/httpx deprecation warning
@@ -689,16 +720,17 @@ Phase 8 - Deterministic interpretation completed
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/resampling.py`
 - `packages/experiment_os_stats/tests/test_permutation_interpretation.py`
 - `packages/experiment_os_stats/tests/test_bootstrap_interpretation.py`
+- `backend/tests/test_continuous_analyses_api.py`
 
 ## Current milestone status
 
-- Phase 8 completed: structured deterministic interpretations cover every implemented statistical method
+- Phase 9 first milestone completed: end-to-end Student t-test workflow for continuous data
 
 ## Next milestone
 
-Begin Phase 9 with a limited interface-completeness audit and its first incomplete workflow:
+Continue Phase 9 with a limited Welch t-test workflow:
 
-- compare the existing frontend workflows with the Phase 9 page, component and state requirements
-- identify the first incomplete end-to-end analysis workflow from the real code
-- expose no statistical calculation in React and continue delegating calculations through the API
-- implement only that first incomplete workflow as a limited milestone
+- add a typed Welch API endpoint delegating to `experiment_os_stats.welch_t_test`
+- add Welch to the manual continuous-test selector
+- reuse the shared result and deterministic-interpretation panels
+- cover API errors and the frontend selection workflow without implementing Mann-Whitney or resampling methods in the same milestone
