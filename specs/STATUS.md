@@ -324,9 +324,34 @@ Phase 9 - Interface completion in progress
 - Bootstrap requests omit hypothesis-test-only alpha and alternative options
 - Mean and median API results preserve B-minus-A orientation and fixed-seed reproducibility
 - Shared result panel now distinguishes estimation-only procedures from null-hypothesis decisions
+- Permutation null-distribution histogram implemented with Plotly.js
+- Permutation observed B-minus-A statistic displayed as a chart reference line
+- Bootstrap-distribution histogram implemented for mean and median estimands
+- Bootstrap estimate and percentile-interval bounds displayed as chart reference lines
+- Resampling charts consume authoritative result metadata without browser-side statistical calculations
+- Permutation and bootstrap charts include deterministic accessible textual summaries
+- Resampling charts remain absent for analyses without resampling distributions
 
 ## Validation
 
+- Phase 9 resampling-visualization initial Docker `ruff format --check .`: passed, 92 files already formatted
+- Phase 9 resampling-visualization initial Docker `ruff check .`: passed
+- Phase 9 resampling-visualization initial Docker `pytest`: passed, 367 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 9 resampling-visualization initial Docker coverage validation: passed, 367 tests, 98.99% `experiment_os_stats` coverage
+- Phase 9 resampling-visualization initial frontend `npm.cmd run lint`: passed
+- Phase 9 resampling-visualization initial frontend tests: passed, 5 test files and 20 tests
+- Phase 9 resampling-visualization initial frontend build: passed with the existing Plotly chunk-size warning
+- Targeted resampling-chart frontend validation: passed, 6 test files and 23 tests; ESLint passed
+- Final Docker `ruff format .`: passed, 92 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 367 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker coverage validation: passed, 367 tests, 98.99% `experiment_os_stats` coverage
+- Final frontend `npm.cmd run lint`: passed
+- Final frontend tests: passed, 6 test files and 23 tests
+- Final frontend build: passed with the existing Plotly chunk-size warning (about 5.11 MB before gzip)
+- `docker compose up --build -d`: passed; frontend and backend containers are running
+- Runtime HTTP verification: frontend returned 200 and backend health returned `ok`
+- Browser visual verification was not executed because the in-app browser execution tool was unavailable in this session
 - Phase 9 bootstrap-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
 - Phase 9 bootstrap-workflow initial Docker `ruff check .`: passed
 - Phase 9 bootstrap-workflow initial Docker `pytest`: passed, 356 tests, 1 existing Starlette/httpx deprecation warning
@@ -827,30 +852,24 @@ Phase 9 - Interface completion in progress
 
 ## Files modified in the current milestone
 
-- `backend/app/api/v1/analyses.py`
-- `backend/app/schemas/analyses.py`
-- `backend/app/services/analysis_service.py`
-- `backend/tests/test_continuous_analyses_api.py`
 - `frontend/src/App.jsx`
-- `frontend/src/api/analyses.js`
-- `frontend/src/tests/App.test.jsx`
-- `frontend/src/tests/analyses.test.js`
-- `frontend/src/components/AnalysisResult.jsx`
+- `frontend/src/styles.css`
 - `specs/STATUS.md`
 
 ## Files added in the current milestone
 
-- `frontend/src/tests/AnalysisResult.test.jsx`
+- `frontend/src/components/ResamplingChart.jsx`
+- `frontend/src/tests/ResamplingChart.test.jsx`
 
 ## Current milestone status
 
-- Phase 9 fifth milestone completed: end-to-end bootstrap mean/median difference workflow
+- Phase 9 sixth milestone completed: permutation and bootstrap distribution visualizations
 
 ## Next milestone
 
-Continue Phase 9 with a limited resampling-visualization workflow:
+Start Phase 10 with a limited JSON-export workflow:
 
-- visualize the permutation null distribution and observed statistic from existing result metadata
-- visualize the bootstrap distribution and percentile interval from existing result metadata
-- add deterministic textual summaries and focused component tests
-- keep export work and broader visual redesign in later milestones
+- define a typed export request containing dataset metadata, analysis options and standardized results
+- generate a downloadable JSON artifact without persistence
+- verify that exported statistical values exactly match the API result
+- defer CSV and PDF exports to separate later milestones

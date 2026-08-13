@@ -7,6 +7,7 @@ import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/si
 import AnalysisResult from "./components/AnalysisResult.jsx";
 import CsvImportPanel from "./components/CsvImportPanel.jsx";
 import DiagnosticCharts from "./components/DiagnosticCharts.jsx";
+import ResamplingChart from "./components/ResamplingChart.jsx";
 import { downloadCsv, simulationToCsv } from "./lib/csv.js";
 
 const initialBinaryForm = {
@@ -223,6 +224,7 @@ export default function App() {
                 {result.metadata?.source === "csv_import" ? <ImportSummary metadata={result.metadata} /> : null}
                 {descriptiveSummary ? <DescriptiveSummary summary={descriptiveSummary} /> : null}
                 {analysisResult ? <AnalysisResult result={analysisResult} /> : null}
+                {analysisResult ? <ResamplingChart result={analysisResult} /> : null}
                 {diagnostics ? (
                   <DiagnosticCharts metricType={result.metric_type} diagnostics={diagnostics} />
                 ) : null}
