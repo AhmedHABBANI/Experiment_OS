@@ -5,10 +5,12 @@ from fastapi import APIRouter
 from app.schemas.analyses import (
     BinaryAnalysisRequest,
     ContinuousAnalysisRequest,
+    MannWhitneyAnalysisRequest,
     StatisticalAnalysisResponse,
 )
 from app.services.analysis_service import (
     run_fisher_exact_analysis,
+    run_mann_whitney_analysis,
     run_student_t_analysis,
     run_two_proportion_z_analysis,
     run_welch_t_analysis,
@@ -47,3 +49,11 @@ def analyze_welch_t(
 ) -> StatisticalAnalysisResponse:
     """Run Welch's independent two-sample t-test on continuous groups."""
     return run_welch_t_analysis(request)
+
+
+@router.post("/mann-whitney", response_model=StatisticalAnalysisResponse)
+def analyze_mann_whitney(
+    request: MannWhitneyAnalysisRequest,
+) -> StatisticalAnalysisResponse:
+    """Run the two-sided Mann-Whitney U test on continuous groups."""
+    return run_mann_whitney_analysis(request)

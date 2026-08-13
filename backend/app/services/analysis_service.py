@@ -3,12 +3,14 @@
 from app.schemas.analyses import (
     BinaryAnalysisRequest,
     ContinuousAnalysisRequest,
+    MannWhitneyAnalysisRequest,
     StatisticalAnalysisResponse,
 )
 from experiment_os_stats import (
     Alternative,
     MissingValuePolicy,
     fisher_exact_test,
+    mann_whitney_u_test,
     student_t_test,
     two_proportion_z_test,
     welch_t_test,
@@ -66,6 +68,19 @@ def run_welch_t_analysis(
         request.group_b,
         alpha=request.alpha,
         alternative=Alternative(request.alternative),
+        missing_policy=MissingValuePolicy(request.missing_policy),
+    )
+    return StatisticalAnalysisResponse(**result.to_dict())
+
+
+def run_mann_whitney_analysis(
+    request: MannWhitneyAnalysisRequest,
+) -> StatisticalAnalysisResponse:
+    """Run the two-sided Mann-Whitney U test using the statistics package."""
+    result = mann_whitney_u_test(
+        request.group_a,
+        request.group_b,
+        alpha=request.alpha,
         missing_policy=MissingValuePolicy(request.missing_policy),
     )
     return StatisticalAnalysisResponse(**result.to_dict())

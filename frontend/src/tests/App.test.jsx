@@ -240,6 +240,17 @@ describe("App", () => {
     expect(screen.getByLabelText("Test")).toHaveValue("welch-t");
   });
 
+  it("forces the two-sided alternative for Mann-Whitney", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Continuous" }));
+    fireEvent.change(screen.getByLabelText("Alternative"), { target: { value: "greater" } });
+    fireEvent.change(screen.getByLabelText("Test"), { target: { value: "mann-whitney" } });
+
+    expect(screen.getByLabelText("Test")).toHaveValue("mann-whitney");
+    expect(screen.getByLabelText("Alternative")).toHaveValue("two-sided");
+    expect(screen.getByLabelText("Alternative")).toBeDisabled();
+  });
+
   it("allows the user to select Fisher exact manually", () => {
     render(<App />);
 

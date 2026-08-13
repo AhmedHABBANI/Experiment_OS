@@ -300,9 +300,35 @@ Phase 9 - Interface completion in progress
 - Frontend continuous-analysis client routes Student and Welch selections to their respective endpoints
 - Welch responses reuse the shared result, warning and deterministic-interpretation panels
 - Welch endpoint exposes Welch-Satterthwaite metadata and preserves B-minus-A orientation
+- `POST /api/v1/analyses/mann-whitney` implemented with a dedicated typed request
+- Mann-Whitney API service delegates all statistical calculations to `experiment_os_stats.mann_whitney_u_test`
+- Mann-Whitney request supports the package contract of one retained observation per group
+- Continuous-test selector now offers Mann-Whitney U without visual redesign
+- Mann-Whitney selection forces and disables the two-sided alternative required by the V1 method
+- Frontend continuous-analysis client routes Mann-Whitney to its dedicated endpoint
+- Mann-Whitney results reuse the shared rank-effect, warning and deterministic-interpretation display
+- API response preserves group-B U orientation and exposes probability of superiority metadata
 
 ## Validation
 
+- Phase 9 Mann-Whitney-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
+- Phase 9 Mann-Whitney-workflow initial Docker `ruff check .`: passed
+- Phase 9 Mann-Whitney-workflow initial Docker `pytest`: passed, 347 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 9 Mann-Whitney-workflow initial Docker coverage validation: passed, 347 tests, 98.99% `experiment_os_stats` coverage
+- Phase 9 Mann-Whitney-workflow initial frontend `npm.cmd run lint`: passed
+- Phase 9 Mann-Whitney-workflow initial frontend tests: passed, 4 test files and 11 tests
+- Phase 9 Mann-Whitney-workflow initial frontend build: passed with the existing large Plotly bundle warning
+- Targeted Mann-Whitney backend validation: passed, 11 tests; Ruff passed on all touched backend Python files
+- Targeted Mann-Whitney frontend validation: passed, 4 test files and 13 tests; ESLint passed
+- Final Docker `ruff format .`: passed, 92 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 350 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 350 tests, 98.99% `experiment_os_stats` coverage, 1 existing Starlette/httpx deprecation warning
+- Final frontend `npm.cmd run lint`: passed
+- Final frontend `npm.cmd run test -- --run`: passed, 4 test files and 13 tests
+- Final frontend `npm.cmd run build`: passed with the existing large Plotly bundle warning; main JavaScript bundle is about 5.11 MB before gzip
+- Final `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- Mann-Whitney runtime verification through the frontend proxy: passed with two-sided alternative, rank-biserial correlation 1.0, probability of superiority 1.0 and `MANN_WHITNEY_NOT_MEDIAN_TEST` warning
 - Phase 9 Welch-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
 - Phase 9 Welch-workflow initial Docker `ruff check .`: passed
 - Phase 9 Welch-workflow initial Docker `pytest`: passed, 345 tests, 1 existing Starlette/httpx deprecation warning
@@ -750,13 +776,13 @@ Phase 9 - Interface completion in progress
 
 ## Current milestone status
 
-- Phase 9 second milestone completed: end-to-end Welch t-test workflow for continuous data
+- Phase 9 third milestone completed: end-to-end Mann-Whitney U workflow for continuous data
 
 ## Next milestone
 
-Continue Phase 9 with a limited Mann-Whitney workflow:
+Continue Phase 9 with a limited permutation-test workflow:
 
-- add a typed Mann-Whitney API endpoint delegating to `experiment_os_stats.mann_whitney_test`
-- add Mann-Whitney to the manual continuous-test selector
+- add a typed permutation API endpoint delegating to `experiment_os_stats.permutation_mean_test`
+- add permutation count and optional seed controls for that method only
 - reuse the shared result and deterministic-interpretation panels
-- cover API errors and the frontend selection workflow without implementing permutation or bootstrap in the same milestone
+- cover reproducible API and frontend selection behavior without implementing bootstrap in the same milestone

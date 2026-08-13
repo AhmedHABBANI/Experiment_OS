@@ -29,6 +29,11 @@ export function analyzeBinaryExperiment(simulation, options) {
 }
 
 export function analyzeContinuousExperiment(simulation, options) {
-  const path = options.test === "welch-t" ? "/analyses/welch-t" : "/analyses/student-t";
+  const paths = {
+    "student-t": "/analyses/student-t",
+    "welch-t": "/analyses/welch-t",
+    "mann-whitney": "/analyses/mann-whitney"
+  };
+  const path = paths[options.test] ?? paths["student-t"];
   return postAnalysis(path, simulation, options);
 }

@@ -71,10 +71,11 @@ export default function App() {
   }
 
   async function processDataset(payload) {
+    const continuousMinimumSize = continuousAnalysis.test === "mann-whitney" ? 1 : 2;
     const canRunContinuousAnalysis =
       payload.metric_type === "continuous" &&
-      payload.group_a.length >= 2 &&
-      payload.group_b.length >= 2;
+      payload.group_a.length >= continuousMinimumSize &&
+      payload.group_b.length >= continuousMinimumSize;
     const [summary, diagnosticData, statisticalAnalysis] = await Promise.all(
       payload.metric_type === "binary"
         ? [
@@ -313,16 +314,25 @@ function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
         <span>Test</span>
         <select
           value={analysis.test}
-          onChange={(event) => onAnalysisChange({ ...analysis, test: event.target.value })}
+          onChange={(event) =>
+            onAnalysisChange({
+              ...analysis,
+              test: event.target.value,
+              alternative:
+                event.target.value === "mann-whitney" ? "two-sided" : analysis.alternative
+            })
+          }
         >
           <option value="student-t">Student t-test</option>
           <option value="welch-t">Welch t-test</option>
+          <option value="mann-whitney">Mann-Whitney U test</option>
         </select>
       </label>
       <label className="field">
         <span>Alternative</span>
         <select
           value={analysis.alternative}
+          disabled={analysis.test === "mann-whitney"}
           onChange={(event) =>
             onAnalysisChange({ ...analysis, alternative: event.target.value })
           }

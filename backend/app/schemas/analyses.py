@@ -25,6 +25,15 @@ class ContinuousAnalysisRequest(BaseModel):
     missing_policy: Literal["drop", "raise"] = "drop"
 
 
+class MannWhitneyAnalysisRequest(BaseModel):
+    """Request body for the two-sided independent Mann-Whitney U test."""
+
+    group_a: list[float | None] = Field(min_length=1)
+    group_b: list[float | None] = Field(min_length=1)
+    alpha: float = Field(default=0.05, gt=0, lt=1)
+    missing_policy: Literal["drop", "raise"] = "drop"
+
+
 class ConfidenceIntervalResponse(BaseModel):
     """Confidence interval returned by an analysis when applicable."""
 

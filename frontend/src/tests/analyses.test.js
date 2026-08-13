@@ -14,7 +14,8 @@ afterEach(() => {
 describe("continuous analysis API client", () => {
   it.each([
     ["student-t", "/api/v1/analyses/student-t"],
-    ["welch-t", "/api/v1/analyses/welch-t"]
+    ["welch-t", "/api/v1/analyses/welch-t"],
+    ["mann-whitney", "/api/v1/analyses/mann-whitney"]
   ])("routes %s to its endpoint", async (test, expectedPath) => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
