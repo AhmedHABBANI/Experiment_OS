@@ -1,6 +1,6 @@
 const API_PREFIX = "/api/v1";
 
-async function postAnalysis(path, simulation, options) {
+async function postAnalysis(path, simulation, options, extraOptions = {}) {
   const response = await fetch(`${API_PREFIX}${path}`, {
     method: "POST",
     headers: {
@@ -10,7 +10,8 @@ async function postAnalysis(path, simulation, options) {
       group_a: simulation.group_a,
       group_b: simulation.group_b,
       alpha: options.alpha,
-      alternative: options.alternative
+      alternative: options.alternative,
+      ...extraOptions
     })
   });
 
@@ -32,8 +33,13 @@ export function analyzeContinuousExperiment(simulation, options) {
   const paths = {
     "student-t": "/analyses/student-t",
     "welch-t": "/analyses/welch-t",
-    "mann-whitney": "/analyses/mann-whitney"
+    "mann-whitney": "/analyses/mann-whitney",
+    permutation: "/analyses/permutation"
   };
   const path = paths[options.test] ?? paths["student-t"];
-  return postAnalysis(path, simulation, options);
+  const extraOptions =
+    options.test === "permutation"
+      ? { n_permutations: options.n_permutations, seed: options.seed }
+      : {};
+  return postAnalysis(path, simulation, options, extraOptions);
 }

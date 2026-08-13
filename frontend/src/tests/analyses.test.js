@@ -15,7 +15,8 @@ describe("continuous analysis API client", () => {
   it.each([
     ["student-t", "/api/v1/analyses/student-t"],
     ["welch-t", "/api/v1/analyses/welch-t"],
-    ["mann-whitney", "/api/v1/analyses/mann-whitney"]
+    ["mann-whitney", "/api/v1/analyses/mann-whitney"],
+    ["permutation", "/api/v1/analyses/permutation"]
   ])("routes %s to its endpoint", async (test, expectedPath) => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
@@ -33,6 +34,28 @@ describe("continuous analysis API client", () => {
       expect.objectContaining({
         method: "POST",
         body: expect.stringContaining(`"alpha":0.05`)
+      })
+    );
+  });
+
+  it("sends permutation count and seed only for permutation", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({
+      ok: true,
+      json: async () => ({ test_name: "permutation_mean_test" })
+    });
+
+    await analyzeContinuousExperiment(dataset, {
+      test: "permutation",
+      alpha: 0.05,
+      alternative: "greater",
+      n_permutations: 500,
+      seed: 42
+    });
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/analyses/permutation",
+      expect.objectContaining({
+        body: expect.stringContaining('"n_permutations":500,"seed":42')
       })
     );
   });

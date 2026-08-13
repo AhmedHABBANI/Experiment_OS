@@ -41,7 +41,9 @@ const initialBinaryAnalysis = {
 const initialContinuousAnalysis = {
   test: "student-t",
   alternative: "two-sided",
-  alpha: 0.05
+  alpha: 0.05,
+  n_permutations: 1000,
+  seed: 42
 };
 
 export default function App() {
@@ -326,6 +328,7 @@ function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
           <option value="student-t">Student t-test</option>
           <option value="welch-t">Welch t-test</option>
           <option value="mann-whitney">Mann-Whitney U test</option>
+          <option value="permutation">Permutation mean test</option>
         </select>
       </label>
       <label className="field">
@@ -349,11 +352,30 @@ function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
         step="0.01"
         onChange={onAnalysisChange}
       />
+      {analysis.test === "permutation" ? (
+        <>
+          <NumberField
+            label="Permutations"
+            name="n_permutations"
+            value={analysis.n_permutations}
+            min="100"
+            max="100000"
+            onChange={onAnalysisChange}
+          />
+          <OptionalNumberField
+            label="Analysis seed"
+            name="seed"
+            value={analysis.seed}
+            min="0"
+            onChange={onAnalysisChange}
+          />
+        </>
+      ) : null}
     </>
   );
 }
 
-function NumberField({ label, name, value, onChange, step = "1" }) {
+function NumberField({ label, name, value, onChange, step = "1", min, max }) {
   return (
     <label className="field">
       <span>{label}</span>
@@ -361,8 +383,32 @@ function NumberField({ label, name, value, onChange, step = "1" }) {
         name={name}
         type="number"
         step={step}
+        min={min}
+        max={max}
         value={value}
         onChange={(event) => onChange((current) => ({ ...current, [name]: Number(event.target.value) }))}
+      />
+    </label>
+  );
+}
+
+function OptionalNumberField({ label, name, value, onChange, step = "1", min, max }) {
+  return (
+    <label className="field">
+      <span>{label}</span>
+      <input
+        name={name}
+        type="number"
+        step={step}
+        min={min}
+        max={max}
+        value={value ?? ""}
+        onChange={(event) =>
+          onChange((current) => ({
+            ...current,
+            [name]: event.target.value === "" ? null : Number(event.target.value)
+          }))
+        }
       />
     </label>
   );

@@ -308,9 +308,35 @@ Phase 9 - Interface completion in progress
 - Frontend continuous-analysis client routes Mann-Whitney to its dedicated endpoint
 - Mann-Whitney results reuse the shared rank-effect, warning and deterministic-interpretation display
 - API response preserves group-B U orientation and exposes probability of superiority metadata
+- `POST /api/v1/analyses/permutation` implemented with typed resampling options
+- Permutation API service delegates all calculations to `experiment_os_stats.permutation_mean_test`
+- Permutation requests enforce 100 to 100000 permutations and an optional non-negative seed
+- Continuous-test selector now offers the permutation mean test without visual redesign
+- Permutation count and seed controls appear only for the permutation method
+- Fixed-seed API calls return reproducible p-values and null distributions
+- Permutation results reuse the shared result and deterministic-interpretation panels
+- Frontend analysis requests preserve the B-minus-A orientation and forward no resampling options to other methods
 
 ## Validation
 
+- Phase 9 permutation-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
+- Phase 9 permutation-workflow initial Docker `ruff check .`: passed
+- Phase 9 permutation-workflow initial Docker `pytest`: passed, 350 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 9 permutation-workflow initial Docker coverage validation: passed, 350 tests, 98.99% `experiment_os_stats` coverage
+- Phase 9 permutation-workflow initial frontend `npm.cmd run lint`: passed
+- Phase 9 permutation-workflow initial frontend tests: passed, 4 test files and 13 tests
+- Phase 9 permutation-workflow initial frontend build: passed with the existing large Plotly bundle warning
+- Targeted permutation backend validation: passed, 17 tests; Ruff passed on all touched backend Python files
+- Targeted permutation frontend validation: passed, 4 test files and 16 tests; ESLint passed
+- Final Docker `ruff format .`: passed, 92 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 356 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker coverage validation: passed, 356 tests, 98.99% `experiment_os_stats` coverage
+- Final frontend `npm.cmd run lint`: passed
+- Final frontend tests: passed, 4 test files and 16 tests
+- Final frontend build: passed with the existing Plotly chunk-size warning (about 5.11 MB before gzip)
+- `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- Runtime permutation verification: frontend returned 200; two requests with 500 permutations and seed 42 returned the same p-value and complete null distribution
 - Phase 9 Mann-Whitney-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
 - Phase 9 Mann-Whitney-workflow initial Docker `ruff check .`: passed
 - Phase 9 Mann-Whitney-workflow initial Docker `pytest`: passed, 347 tests, 1 existing Starlette/httpx deprecation warning
@@ -774,15 +800,27 @@ Phase 9 - Interface completion in progress
 - `backend/tests/test_continuous_analyses_api.py`
 - `frontend/src/tests/analyses.test.js`
 
+## Files modified in the current milestone
+
+- `backend/app/api/v1/analyses.py`
+- `backend/app/schemas/analyses.py`
+- `backend/app/services/analysis_service.py`
+- `backend/tests/test_continuous_analyses_api.py`
+- `frontend/src/App.jsx`
+- `frontend/src/api/analyses.js`
+- `frontend/src/tests/App.test.jsx`
+- `frontend/src/tests/analyses.test.js`
+- `specs/STATUS.md`
+
 ## Current milestone status
 
-- Phase 9 third milestone completed: end-to-end Mann-Whitney U workflow for continuous data
+- Phase 9 fourth milestone completed: end-to-end permutation mean-test workflow for continuous data
 
 ## Next milestone
 
-Continue Phase 9 with a limited permutation-test workflow:
+Continue Phase 9 with a limited bootstrap workflow:
 
-- add a typed permutation API endpoint delegating to `experiment_os_stats.permutation_mean_test`
-- add permutation count and optional seed controls for that method only
+- add typed bootstrap API endpoints delegating to the existing mean- and median-difference procedures
+- add estimand, replication-count, confidence-level and optional-seed controls for bootstrap only
 - reuse the shared result and deterministic-interpretation panels
-- cover reproducible API and frontend selection behavior without implementing bootstrap in the same milestone
+- cover reproducible API and frontend selection behavior without starting the later design-improvement milestone

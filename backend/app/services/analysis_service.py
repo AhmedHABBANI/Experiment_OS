@@ -4,6 +4,7 @@ from app.schemas.analyses import (
     BinaryAnalysisRequest,
     ContinuousAnalysisRequest,
     MannWhitneyAnalysisRequest,
+    PermutationAnalysisRequest,
     StatisticalAnalysisResponse,
 )
 from experiment_os_stats import (
@@ -11,6 +12,7 @@ from experiment_os_stats import (
     MissingValuePolicy,
     fisher_exact_test,
     mann_whitney_u_test,
+    permutation_mean_test,
     student_t_test,
     two_proportion_z_test,
     welch_t_test,
@@ -81,6 +83,22 @@ def run_mann_whitney_analysis(
         request.group_a,
         request.group_b,
         alpha=request.alpha,
+        missing_policy=MissingValuePolicy(request.missing_policy),
+    )
+    return StatisticalAnalysisResponse(**result.to_dict())
+
+
+def run_permutation_analysis(
+    request: PermutationAnalysisRequest,
+) -> StatisticalAnalysisResponse:
+    """Run the Monte-Carlo permutation mean test using the statistics package."""
+    result = permutation_mean_test(
+        request.group_a,
+        request.group_b,
+        alpha=request.alpha,
+        alternative=Alternative(request.alternative),
+        n_permutations=request.n_permutations,
+        seed=request.seed,
         missing_policy=MissingValuePolicy(request.missing_policy),
     )
     return StatisticalAnalysisResponse(**result.to_dict())

@@ -251,6 +251,21 @@ describe("App", () => {
     expect(screen.getByLabelText("Alternative")).toBeDisabled();
   });
 
+  it("shows reproducibility controls only for permutation", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Continuous" }));
+
+    expect(screen.queryByLabelText("Permutations")).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Test"), { target: { value: "permutation" } });
+
+    expect(screen.getByLabelText("Permutations")).toHaveValue(1000);
+    expect(screen.getByLabelText("Analysis seed")).toHaveValue(42);
+    expect(screen.getByLabelText("Alternative")).not.toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Analysis seed"), { target: { value: "" } });
+    expect(screen.getByLabelText("Analysis seed")).toHaveValue(null);
+  });
+
   it("allows the user to select Fisher exact manually", () => {
     render(<App />);
 

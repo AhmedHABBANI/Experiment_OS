@@ -34,6 +34,13 @@ class MannWhitneyAnalysisRequest(BaseModel):
     missing_policy: Literal["drop", "raise"] = "drop"
 
 
+class PermutationAnalysisRequest(ContinuousAnalysisRequest):
+    """Request body for the Monte-Carlo permutation mean test."""
+
+    n_permutations: int = Field(default=10_000, ge=100, le=100_000, strict=True)
+    seed: int | None = Field(default=None, ge=0, strict=True)
+
+
 class ConfidenceIntervalResponse(BaseModel):
     """Confidence interval returned by an analysis when applicable."""
 

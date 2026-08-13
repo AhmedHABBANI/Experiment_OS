@@ -119,6 +119,56 @@ def test_mann_whitney_endpoint_returns_structured_degenerate_error() -> None:
     assert response.json()["error"]["code"] == "DEGENERATE_SAMPLE_ERROR"
 
 
+def test_permutation_endpoint_returns_reproducible_result() -> None:
+    client = TestClient(create_app())
+    request = {
+        "group_a": [1.0, 2.0, 3.0, 4.0],
+        "group_b": [4.0, 5.0, 6.0, 7.0],
+        "alternative": "greater",
+        "n_permutations": 500,
+        "seed": 42,
+    }
+
+    first = client.post("/api/v1/analyses/permutation", json=request)
+    second = client.post("/api/v1/analyses/permutation", json=request)
+    payload = first.json()
+
+    assert first.status_code == second.status_code == 200
+    assert payload["test_name"] == "permutation_mean_test"
+    assert payload["alternative"] == "greater"
+    assert payload["estimate"] == pytest.approx(3.0)
+    assert payload["metadata"]["n_permutations"] == 500
+    assert payload["metadata"]["seed"] == 42
+    assert payload["metadata"]["p_value_method"] == "add_one_monte_carlo"
+    assert payload["p_value"] == second.json()["p_value"]
+    assert (
+        payload["metadata"]["null_distribution"] == second.json()["metadata"]["null_distribution"]
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_options",
+    [
+        {"n_permutations": 99},
+        {"n_permutations": 100_001},
+        {"n_permutations": True},
+        {"seed": -1},
+        {"seed": True},
+    ],
+)
+def test_permutation_endpoint_rejects_invalid_resampling_options(
+    invalid_options: dict[str, int],
+) -> None:
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/api/v1/analyses/permutation",
+        json={"group_a": [1.0, 2.0], "group_b": [2.0, 3.0], **invalid_options},
+    )
+
+    assert response.status_code == 422
+
+
 def test_student_t_endpoint_returns_structured_degenerate_error() -> None:
     client = TestClient(create_app())
 
