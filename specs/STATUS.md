@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 8 - Deterministic binary, parametric and rank-based interpretation completed
+Phase 8 - Deterministic binary, parametric, rank-based and permutation interpretation completed
 
 ## Completed
 
@@ -270,9 +270,24 @@ Phase 8 - Deterministic binary, parametric and rank-based interpretation complet
 - Missing rank-effect confidence interval disclosed as unquantified estimation uncertainty
 - Tie handling and distribution-shape limitations contextualized through structured warnings
 - Mann-Whitney practical significance remains unassessed without a domain threshold
+- Deterministic permutation mean-test interpretation implemented
+- Permutation effects consistently describe the observed mean difference as B minus A
+- Empirical p-value wording documents the add-one correction and finite permutation resolution
+- Permutation uncertainty distinguishes Monte-Carlo variability from effect-estimation uncertainty
+- Fixed-seed reproducibility and unseeded non-reproducibility are stated explicitly
+- Directional permutation alternatives generate matching hypotheses
+- Permutation practical significance remains unassessed without a domain threshold
 
 ## Validation
 
+- Phase 8 permutation-interpretation initial Docker validation: passed, 326 tests, 99.21% `experiment_os_stats` coverage
+- Local targeted Ruff attempt: not executed because `ruff` is not available in the Windows `PATH`
+- First targeted Docker attempt: stopped before validation because the base image did not contain `ruff`
+- Targeted permutation and interpretation Docker validation: passed, 27 tests; Ruff passed on all touched Python files
+- Final Docker `ruff format .`: passed, 90 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 333 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker `pytest --cov=experiment_os_stats --cov-report=term-missing`: passed, 333 tests, 98.97% `experiment_os_stats` coverage, 1 existing Starlette/httpx deprecation warning
 - Phase 8 Mann-Whitney-interpretation initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 79 files already formatted
 - Phase 8 Mann-Whitney-interpretation initial `.\.venv\Scripts\ruff.exe check .`: passed
 - Phase 8 Mann-Whitney-interpretation initial Docker validation: passed, 316 tests, 99.20% `experiment_os_stats` coverage
@@ -653,16 +668,18 @@ Phase 8 - Deterministic binary, parametric and rank-based interpretation complet
 - `packages/experiment_os_stats/tests/test_continuous_interpretation.py`
 - `packages/experiment_os_stats/src/experiment_os_stats/interpretation/nonparametric.py`
 - `packages/experiment_os_stats/tests/test_mann_whitney_interpretation.py`
+- `packages/experiment_os_stats/src/experiment_os_stats/interpretation/resampling.py`
+- `packages/experiment_os_stats/tests/test_permutation_interpretation.py`
 
 ## Current milestone status
 
-- Phase 8 third milestone completed: structured deterministic interpretation for Mann-Whitney
+- Phase 8 fourth milestone completed: structured deterministic interpretation for the permutation mean test
 
 ## Next milestone
 
-Continue Phase 8 with a limited permutation interpretation milestone:
+Continue Phase 8 with a limited bootstrap interpretation milestone:
 
-- apply the structured interpretation contract to the permutation mean test
-- describe the observed B-minus-A mean difference and empirical p-value
-- contextualize Monte-Carlo uncertainty, permutation count and reproducibility seed
-- cover significant, non-significant and directional alternatives
+- apply the structured interpretation contract to bootstrap mean and median estimates
+- describe observed B-minus-A effects and percentile confidence intervals
+- contextualize bootstrap replication count, standard error and reproducibility seed
+- preserve the absence of p-values and null-hypothesis decisions for estimation-only procedures

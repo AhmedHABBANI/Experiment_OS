@@ -8,6 +8,7 @@ from experiment_os_stats.analyses._common import normalize_alternative, validate
 from experiment_os_stats.data.normalization import SampleLike
 from experiment_os_stats.data.validation import validate_ab_samples
 from experiment_os_stats.exceptions import DegenerateSampleError, InvalidParameterError
+from experiment_os_stats.interpretation import interpret_permutation_mean_result
 from experiment_os_stats.results import ConfidenceInterval, StatisticalResult
 from experiment_os_stats.types import Alternative, MetricType, MissingValuePolicy
 
@@ -168,19 +169,14 @@ def permutation_mean_test(
             "Group labels are exchangeable under the null hypothesis.",
             "The mean difference is an appropriate effect summary.",
         ),
-        interpretation={
-            "null_hypothesis": (
-                "Group labels are exchangeable and the population mean difference is zero."
-            ),
-            "alternative_hypothesis": (
-                "The population mean in group B differs from group A."
-                if normalized_alternative is Alternative.TWO_SIDED
-                else (
-                    "The population mean in group B is "
-                    f"{normalized_alternative.value} than group A."
-                )
-            ),
-        },
+        interpretation=interpret_permutation_mean_result(
+            estimate=observed_statistic,
+            p_value=p_value,
+            alpha=alpha,
+            alternative=normalized_alternative,
+            n_permutations=n_permutations,
+            seed=seed,
+        ),
         metadata={
             "n_a": n_a,
             "n_b": n_b,
