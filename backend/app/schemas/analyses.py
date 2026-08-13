@@ -41,6 +41,18 @@ class PermutationAnalysisRequest(ContinuousAnalysisRequest):
     seed: int | None = Field(default=None, ge=0, strict=True)
 
 
+class BootstrapAnalysisRequest(BaseModel):
+    """Request body for a percentile bootstrap difference estimate."""
+
+    group_a: list[float | None] = Field(min_length=2)
+    group_b: list[float | None] = Field(min_length=2)
+    estimand: Literal["mean", "median"] = "mean"
+    confidence_level: float = Field(default=0.95, gt=0, lt=1, strict=True)
+    n_resamples: int = Field(default=10_000, ge=100, le=100_000, strict=True)
+    seed: int | None = Field(default=None, ge=0, strict=True)
+    missing_policy: Literal["drop", "raise"] = "drop"
+
+
 class ConfidenceIntervalResponse(BaseModel):
     """Confidence interval returned by an analysis when applicable."""
 

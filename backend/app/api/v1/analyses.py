@@ -4,12 +4,14 @@ from fastapi import APIRouter
 
 from app.schemas.analyses import (
     BinaryAnalysisRequest,
+    BootstrapAnalysisRequest,
     ContinuousAnalysisRequest,
     MannWhitneyAnalysisRequest,
     PermutationAnalysisRequest,
     StatisticalAnalysisResponse,
 )
 from app.services.analysis_service import (
+    run_bootstrap_analysis,
     run_fisher_exact_analysis,
     run_mann_whitney_analysis,
     run_permutation_analysis,
@@ -67,3 +69,11 @@ def analyze_permutation(
 ) -> StatisticalAnalysisResponse:
     """Run the Monte-Carlo permutation mean test on continuous groups."""
     return run_permutation_analysis(request)
+
+
+@router.post("/bootstrap-difference", response_model=StatisticalAnalysisResponse)
+def analyze_bootstrap_difference(
+    request: BootstrapAnalysisRequest,
+) -> StatisticalAnalysisResponse:
+    """Estimate a mean or median B-minus-A difference by percentile bootstrap."""
+    return run_bootstrap_analysis(request)

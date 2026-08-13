@@ -2,6 +2,7 @@
 
 from app.schemas.analyses import (
     BinaryAnalysisRequest,
+    BootstrapAnalysisRequest,
     ContinuousAnalysisRequest,
     MannWhitneyAnalysisRequest,
     PermutationAnalysisRequest,
@@ -10,6 +11,8 @@ from app.schemas.analyses import (
 from experiment_os_stats import (
     Alternative,
     MissingValuePolicy,
+    bootstrap_mean_difference,
+    bootstrap_median_difference,
     fisher_exact_test,
     mann_whitney_u_test,
     permutation_mean_test,
@@ -98,6 +101,24 @@ def run_permutation_analysis(
         alpha=request.alpha,
         alternative=Alternative(request.alternative),
         n_permutations=request.n_permutations,
+        seed=request.seed,
+        missing_policy=MissingValuePolicy(request.missing_policy),
+    )
+    return StatisticalAnalysisResponse(**result.to_dict())
+
+
+def run_bootstrap_analysis(
+    request: BootstrapAnalysisRequest,
+) -> StatisticalAnalysisResponse:
+    """Estimate a bootstrap mean or median difference using the statistics package."""
+    procedure = (
+        bootstrap_mean_difference if request.estimand == "mean" else bootstrap_median_difference
+    )
+    result = procedure(
+        request.group_a,
+        request.group_b,
+        confidence_level=request.confidence_level,
+        n_resamples=request.n_resamples,
         seed=request.seed,
         missing_policy=MissingValuePolicy(request.missing_policy),
     )

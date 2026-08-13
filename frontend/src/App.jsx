@@ -43,6 +43,9 @@ const initialContinuousAnalysis = {
   alternative: "two-sided",
   alpha: 0.05,
   n_permutations: 1000,
+  estimand: "mean",
+  confidence_level: 0.95,
+  n_resamples: 1000,
   seed: 42
 };
 
@@ -329,29 +332,34 @@ function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
           <option value="welch-t">Welch t-test</option>
           <option value="mann-whitney">Mann-Whitney U test</option>
           <option value="permutation">Permutation mean test</option>
+          <option value="bootstrap">Bootstrap difference</option>
         </select>
       </label>
-      <label className="field">
-        <span>Alternative</span>
-        <select
-          value={analysis.alternative}
-          disabled={analysis.test === "mann-whitney"}
-          onChange={(event) =>
-            onAnalysisChange({ ...analysis, alternative: event.target.value })
-          }
-        >
-          <option value="two-sided">Two-sided</option>
-          <option value="greater">B greater than A</option>
-          <option value="less">B less than A</option>
-        </select>
-      </label>
-      <NumberField
-        label="Alpha"
-        name="alpha"
-        value={analysis.alpha}
-        step="0.01"
-        onChange={onAnalysisChange}
-      />
+      {analysis.test !== "bootstrap" ? (
+        <>
+          <label className="field">
+            <span>Alternative</span>
+            <select
+              value={analysis.alternative}
+              disabled={analysis.test === "mann-whitney"}
+              onChange={(event) =>
+                onAnalysisChange({ ...analysis, alternative: event.target.value })
+              }
+            >
+              <option value="two-sided">Two-sided</option>
+              <option value="greater">B greater than A</option>
+              <option value="less">B less than A</option>
+            </select>
+          </label>
+          <NumberField
+            label="Alpha"
+            name="alpha"
+            value={analysis.alpha}
+            step="0.01"
+            onChange={onAnalysisChange}
+          />
+        </>
+      ) : null}
       {analysis.test === "permutation" ? (
         <>
           <NumberField
@@ -360,6 +368,46 @@ function ContinuousFields({ form, onChange, analysis, onAnalysisChange }) {
             value={analysis.n_permutations}
             min="100"
             max="100000"
+            onChange={onAnalysisChange}
+          />
+          <OptionalNumberField
+            label="Analysis seed"
+            name="seed"
+            value={analysis.seed}
+            min="0"
+            onChange={onAnalysisChange}
+          />
+        </>
+      ) : null}
+      {analysis.test === "bootstrap" ? (
+        <>
+          <label className="field">
+            <span>Estimand</span>
+            <select
+              value={analysis.estimand}
+              onChange={(event) =>
+                onAnalysisChange({ ...analysis, estimand: event.target.value })
+              }
+            >
+              <option value="mean">Mean difference</option>
+              <option value="median">Median difference</option>
+            </select>
+          </label>
+          <NumberField
+            label="Resamples"
+            name="n_resamples"
+            value={analysis.n_resamples}
+            min="100"
+            max="100000"
+            onChange={onAnalysisChange}
+          />
+          <NumberField
+            label="Confidence level"
+            name="confidence_level"
+            value={analysis.confidence_level}
+            min="0.01"
+            max="0.99"
+            step="0.01"
             onChange={onAnalysisChange}
           />
           <OptionalNumberField

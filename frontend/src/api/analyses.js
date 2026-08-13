@@ -1,6 +1,6 @@
 const API_PREFIX = "/api/v1";
 
-async function postAnalysis(path, simulation, options, extraOptions = {}) {
+async function postAnalysis(path, simulation, options, extraOptions = {}, includeTestOptions = true) {
   const response = await fetch(`${API_PREFIX}${path}`, {
     method: "POST",
     headers: {
@@ -9,8 +9,9 @@ async function postAnalysis(path, simulation, options, extraOptions = {}) {
     body: JSON.stringify({
       group_a: simulation.group_a,
       group_b: simulation.group_b,
-      alpha: options.alpha,
-      alternative: options.alternative,
+      ...(includeTestOptions
+        ? { alpha: options.alpha, alternative: options.alternative }
+        : {}),
       ...extraOptions
     })
   });
@@ -34,12 +35,20 @@ export function analyzeContinuousExperiment(simulation, options) {
     "student-t": "/analyses/student-t",
     "welch-t": "/analyses/welch-t",
     "mann-whitney": "/analyses/mann-whitney",
-    permutation: "/analyses/permutation"
+    permutation: "/analyses/permutation",
+    bootstrap: "/analyses/bootstrap-difference"
   };
   const path = paths[options.test] ?? paths["student-t"];
-  const extraOptions =
-    options.test === "permutation"
-      ? { n_permutations: options.n_permutations, seed: options.seed }
-      : {};
-  return postAnalysis(path, simulation, options, extraOptions);
+  let extraOptions = {};
+  if (options.test === "permutation") {
+    extraOptions = { n_permutations: options.n_permutations, seed: options.seed };
+  } else if (options.test === "bootstrap") {
+    extraOptions = {
+      estimand: options.estimand,
+      confidence_level: options.confidence_level,
+      n_resamples: options.n_resamples,
+      seed: options.seed
+    };
+  }
+  return postAnalysis(path, simulation, options, extraOptions, options.test !== "bootstrap");
 }

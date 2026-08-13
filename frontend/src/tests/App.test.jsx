@@ -266,6 +266,22 @@ describe("App", () => {
     expect(screen.getByLabelText("Analysis seed")).toHaveValue(null);
   });
 
+  it("shows estimation controls only for bootstrap", () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole("button", { name: "Continuous" }));
+    fireEvent.change(screen.getByLabelText("Test"), { target: { value: "bootstrap" } });
+
+    expect(screen.queryByLabelText("Alternative")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Alpha")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Estimand")).toHaveValue("mean");
+    expect(screen.getByLabelText("Resamples")).toHaveValue(1000);
+    expect(screen.getByLabelText("Confidence level")).toHaveValue(0.95);
+    expect(screen.getByLabelText("Analysis seed")).toHaveValue(42);
+
+    fireEvent.change(screen.getByLabelText("Estimand"), { target: { value: "median" } });
+    expect(screen.getByLabelText("Estimand")).toHaveValue("median");
+  });
+
   it("allows the user to select Fisher exact manually", () => {
     render(<App />);
 

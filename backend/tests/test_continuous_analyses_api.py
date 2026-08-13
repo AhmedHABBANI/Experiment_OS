@@ -169,6 +169,74 @@ def test_permutation_endpoint_rejects_invalid_resampling_options(
     assert response.status_code == 422
 
 
+@pytest.mark.parametrize(
+    ("estimand", "expected_test_name", "expected_estimate"),
+    [
+        ("mean", "bootstrap_mean_difference", 3.0),
+        ("median", "bootstrap_median_difference", 3.0),
+    ],
+)
+def test_bootstrap_endpoint_returns_reproducible_estimate(
+    estimand: str,
+    expected_test_name: str,
+    expected_estimate: float,
+) -> None:
+    client = TestClient(create_app())
+    request = {
+        "group_a": [1.0, 2.0, 3.0, 4.0],
+        "group_b": [4.0, 5.0, 6.0, 7.0],
+        "estimand": estimand,
+        "confidence_level": 0.9,
+        "n_resamples": 500,
+        "seed": 42,
+    }
+
+    first = client.post("/api/v1/analyses/bootstrap-difference", json=request)
+    second = client.post("/api/v1/analyses/bootstrap-difference", json=request)
+    payload = first.json()
+
+    assert first.status_code == second.status_code == 200
+    assert payload["test_name"] == expected_test_name
+    assert payload["estimate"] == pytest.approx(expected_estimate)
+    assert payload["p_value"] is None
+    assert payload["reject_null"] is None
+    assert payload["confidence_interval"]["level"] == pytest.approx(0.9)
+    assert payload["confidence_interval"]["method"] == "bootstrap_percentile"
+    assert payload["metadata"]["n_resamples"] == 500
+    assert payload["metadata"]["seed"] == 42
+    assert (
+        payload["metadata"]["bootstrap_distribution"]
+        == second.json()["metadata"]["bootstrap_distribution"]
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_options",
+    [
+        {"estimand": "mode"},
+        {"n_resamples": 99},
+        {"n_resamples": 100_001},
+        {"n_resamples": True},
+        {"confidence_level": 0},
+        {"confidence_level": 1},
+        {"confidence_level": True},
+        {"seed": -1},
+        {"seed": True},
+    ],
+)
+def test_bootstrap_endpoint_rejects_invalid_options(
+    invalid_options: dict[str, object],
+) -> None:
+    client = TestClient(create_app())
+
+    response = client.post(
+        "/api/v1/analyses/bootstrap-difference",
+        json={"group_a": [1.0, 2.0], "group_b": [2.0, 3.0], **invalid_options},
+    )
+
+    assert response.status_code == 422
+
+
 def test_student_t_endpoint_returns_structured_degenerate_error() -> None:
     client = TestClient(create_app())
 

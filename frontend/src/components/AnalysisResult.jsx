@@ -1,4 +1,5 @@
 export default function AnalysisResult({ result }) {
+  const isEstimationOnly = result.reject_null === null;
   const metrics = [
     ["statistic", "statistic"],
     ["p_value", "p-value"],
@@ -14,7 +15,11 @@ export default function AnalysisResult({ result }) {
           <h3>Statistical analysis</h3>
         </div>
         <span className={`decision-badge ${result.reject_null ? "reject" : "retain"}`}>
-          {result.reject_null ? "Reject H0" : "Do not reject H0"}
+          {isEstimationOnly
+            ? "Estimation only"
+            : result.reject_null
+              ? "Reject H0"
+              : "Do not reject H0"}
         </span>
       </div>
 

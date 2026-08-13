@@ -316,9 +316,34 @@ Phase 9 - Interface completion in progress
 - Fixed-seed API calls return reproducible p-values and null distributions
 - Permutation results reuse the shared result and deterministic-interpretation panels
 - Frontend analysis requests preserve the B-minus-A orientation and forward no resampling options to other methods
+- `POST /api/v1/analyses/bootstrap-difference` implemented with a typed estimand and resampling contract
+- Bootstrap API dispatches mean and median estimands to their existing `experiment_os_stats` procedures
+- Bootstrap requests enforce 100 to 100000 resamples, a strict confidence level and an optional non-negative seed
+- Continuous-test selector now offers bootstrap difference estimation without visual redesign
+- Bootstrap-only controls implemented for estimand, resamples, confidence level and seed
+- Bootstrap requests omit hypothesis-test-only alpha and alternative options
+- Mean and median API results preserve B-minus-A orientation and fixed-seed reproducibility
+- Shared result panel now distinguishes estimation-only procedures from null-hypothesis decisions
 
 ## Validation
 
+- Phase 9 bootstrap-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
+- Phase 9 bootstrap-workflow initial Docker `ruff check .`: passed
+- Phase 9 bootstrap-workflow initial Docker `pytest`: passed, 356 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 9 bootstrap-workflow initial Docker coverage validation: passed, 356 tests, 98.99% `experiment_os_stats` coverage
+- Phase 9 bootstrap-workflow initial frontend `npm.cmd run lint`: passed
+- Phase 9 bootstrap-workflow initial frontend tests: passed, 4 test files and 16 tests
+- Phase 9 bootstrap-workflow initial frontend build: passed with the existing Plotly chunk-size warning
+- Targeted bootstrap backend validation: passed, 28 tests; Ruff passed after formatting 2 touched files
+- First bootstrap frontend final test run: 19 tests passed and 1 routing assertion failed because it still expected hypothesis-test alpha on bootstrap requests; the assertion was corrected to match the estimation contract
+- Targeted bootstrap frontend validation after correction: passed, 5 test files and 20 tests; ESLint passed
+- Bootstrap frontend production build: passed with the existing Plotly chunk-size warning (about 5.11 MB before gzip)
+- Final Docker `ruff format .`: passed, 92 files left unchanged
+- Final Docker `ruff check .`: passed
+- Final Docker `pytest`: passed, 367 tests, 1 existing Starlette/httpx deprecation warning
+- Final Docker coverage validation: passed, 367 tests, 98.99% `experiment_os_stats` coverage
+- `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- Runtime bootstrap verification: frontend returned 200; mean and median dispatch passed, estimation-only fields remained null, and two requests with 500 resamples and seed 42 returned the same bootstrap distribution
 - Phase 9 permutation-workflow initial Docker `ruff format --check .`: passed, 92 files already formatted
 - Phase 9 permutation-workflow initial Docker `ruff check .`: passed
 - Phase 9 permutation-workflow initial Docker `pytest`: passed, 350 tests, 1 existing Starlette/httpx deprecation warning
@@ -810,17 +835,22 @@ Phase 9 - Interface completion in progress
 - `frontend/src/api/analyses.js`
 - `frontend/src/tests/App.test.jsx`
 - `frontend/src/tests/analyses.test.js`
+- `frontend/src/components/AnalysisResult.jsx`
 - `specs/STATUS.md`
+
+## Files added in the current milestone
+
+- `frontend/src/tests/AnalysisResult.test.jsx`
 
 ## Current milestone status
 
-- Phase 9 fourth milestone completed: end-to-end permutation mean-test workflow for continuous data
+- Phase 9 fifth milestone completed: end-to-end bootstrap mean/median difference workflow
 
 ## Next milestone
 
-Continue Phase 9 with a limited bootstrap workflow:
+Continue Phase 9 with a limited resampling-visualization workflow:
 
-- add typed bootstrap API endpoints delegating to the existing mean- and median-difference procedures
-- add estimand, replication-count, confidence-level and optional-seed controls for bootstrap only
-- reuse the shared result and deterministic-interpretation panels
-- cover reproducible API and frontend selection behavior without starting the later design-improvement milestone
+- visualize the permutation null distribution and observed statistic from existing result metadata
+- visualize the bootstrap distribution and percentile interval from existing result metadata
+- add deterministic textual summaries and focused component tests
+- keep export work and broader visual redesign in later milestones
