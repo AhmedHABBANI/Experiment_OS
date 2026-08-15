@@ -393,7 +393,7 @@ Phase 11 - CI and documentation in progress
 - Final CI-milestone `docker compose config -q`: passed
 - Final CI-milestone `docker compose build`: passed for backend and frontend
 - Final CI-milestone `rhysd/actionlint`: passed with no diagnostics
-- GitHub-hosted execution is not claimed before the workflows are pushed and completed on GitHub
+- GitHub-hosted validation for commit `c0a6a6e`: backend, frontend and Docker workflows all completed successfully
 - Phase 10 PDF initial Docker `ruff format --check .`: passed, 96 files already formatted
 - Phase 10 PDF initial Docker `ruff check .`: passed
 - Phase 10 PDF initial Docker `pytest`: passed, 372 tests, 1 existing Starlette/httpx deprecation warning
