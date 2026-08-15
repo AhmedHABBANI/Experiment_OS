@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 10 - Exports completed
+Phase 11 - CI and documentation in progress
 
 ## Completed
 
@@ -359,9 +359,41 @@ Phase 10 - Exports completed
 - Large resampling distributions are omitted from tabular PDF output while their configuration, estimates and reproducibility metadata remain available
 - Frontend PDF client and browser download action implemented for complete analyses
 - ReportLab added as the PDF runtime dependency and pypdf as a test-only extraction dependency
+- GitHub Actions backend quality workflow implemented for Python 3.12
+- Backend CI enforces Ruff formatting, Ruff lint and the complete Pytest suite with the 85% coverage threshold
+- GitHub Actions frontend quality workflow implemented for Node.js 22 and the committed npm lockfile
+- Frontend CI enforces npm clean install, ESLint, Vitest and the production Vite build
+- GitHub Actions Docker quality workflow validates the Compose model and builds both application images
+- CI workflows run on pushes to `main`, pull requests and manual dispatches
+- CI permissions are limited to repository-content read access
+- Per-workflow concurrency cancels obsolete runs for the same Git reference
+- Official Node 24-based GitHub actions generations are used: checkout, setup-python and setup-node v6
 
 ## Validation
 
+- Phase 11 CI initial Docker `ruff format --check .`: passed, 96 files already formatted
+- Phase 11 CI initial Docker `ruff check .`: passed
+- Phase 11 CI initial Docker `pytest`: passed, 373 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 11 CI initial Docker coverage validation: passed, 373 tests, 98.99% `experiment_os_stats` coverage
+- Phase 11 CI initial frontend lint: passed
+- Phase 11 CI initial frontend tests: passed, 7 test files and 28 tests
+- Phase 11 CI initial frontend build: passed with the existing Plotly chunk-size warning
+- Phase 11 CI initial `docker compose config -q`: passed
+- Phase 11 CI initial `docker compose build`: passed for backend and frontend
+- Official action repositories checked before implementation; v6 is the documented current generation for checkout, setup-python and setup-node
+- Workflow validation with `rhysd/actionlint`: passed with no diagnostics
+- Clean Python 3.12 reproduction of the backend job: passed, including package installation, Ruff, 373 tests and 98.99% coverage
+- Final CI-milestone Docker `ruff format .`: passed, 96 files left unchanged
+- Final CI-milestone Docker `ruff check .`: passed
+- Final CI-milestone Docker `pytest`: passed, 373 tests, 1 existing Starlette/httpx deprecation warning
+- Final CI-milestone Docker coverage validation: passed, 373 tests, 98.99% `experiment_os_stats` coverage
+- Final CI-milestone frontend lint: passed
+- Final CI-milestone frontend tests: passed, 7 test files and 28 tests
+- Final CI-milestone frontend build: passed with the existing Plotly chunk-size warning (about 5.12 MB before gzip)
+- Final CI-milestone `docker compose config -q`: passed
+- Final CI-milestone `docker compose build`: passed for backend and frontend
+- Final CI-milestone `rhysd/actionlint`: passed with no diagnostics
+- GitHub-hosted execution is not claimed before the workflows are pushed and completed on GitHub
 - Phase 10 PDF initial Docker `ruff format --check .`: passed, 96 files already formatted
 - Phase 10 PDF initial Docker `ruff check .`: passed
 - Phase 10 PDF initial Docker `pytest`: passed, 372 tests, 1 existing Starlette/httpx deprecation warning
@@ -957,20 +989,13 @@ Phase 10 - Exports completed
 
 ## Files modified in the current milestone
 
-- `backend/pyproject.toml`
-- `backend/app/api/router.py`
-- `backend/app/api/v1/exports.py`
-- `backend/app/services/export_service.py`
-- `backend/tests/test_json_export.py`
-- `frontend/src/App.jsx`
-- `frontend/src/api/exports.js`
-- `frontend/src/tests/App.test.jsx`
-- `frontend/src/tests/exports.test.js`
 - `specs/STATUS.md`
 
 ## Files added in the current milestone
 
-- `frontend/src/lib/pdf.js`
+- `.github/workflows/backend.yml`
+- `.github/workflows/frontend.yml`
+- `.github/workflows/docker.yml`
 
 ## Files deleted in the current milestone
 
@@ -978,14 +1003,13 @@ Phase 10 - Exports completed
 
 ## Current milestone status
 
-- Phase 10 fourth milestone completed: in-memory downloadable PDF report
-- Phase 10 completed: JSON, flattened-results CSV, analyzed-data CSV and PDF exports are implemented
+- Phase 11 first milestone completed: automated backend, frontend and Docker quality gates
 
 ## Next milestone
 
-Start Phase 11 with a limited CI quality-gates milestone:
+Continue Phase 11 with a focused README and local-run documentation milestone:
 
-- inspect the existing GitHub Actions state against the roadmap
-- add or complete Python lint, tests and coverage gates
-- add frontend lint, tests and production-build gates
-- defer documentation guides and screenshots to separate Phase 11 milestones
+- update the stale project status and capability list
+- document the authoritative local setup and validation commands
+- document the complete simulation/import/analysis/export workflow at a high level
+- defer the detailed CSV, statistical-method and interpretation guides to separate milestones
