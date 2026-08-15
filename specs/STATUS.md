@@ -345,9 +345,34 @@ Phase 10 - Exports in progress
 - Structured list values are preserved as compact JSON instead of being discarded
 - CSV response exposes the attachment filename `experiment-os-results.csv` without persistent storage
 - Frontend results-CSV client and download action implemented for complete analyses
+- `POST /api/v1/exports/csv/data` implemented with a typed normalized-dataset request
+- Analyzed-data CSV uses the stable long format `group,observation,value`
+- Group A then group B ordering and within-group observation ordering are deterministic
+- Missing values are excluded because they are not retained by the statistical analyses
+- Binary values remain normalized to zero or one and continuous values retain their numeric value
+- Browser-side dataset serialization removed; the backend now owns the analyzed-data artifact
+- Existing dataset download action now retrieves `experiment-os-analyzed-data.csv` from the API
 
 ## Validation
 
+- Phase 10 analyzed-data CSV initial Docker `ruff format --check .`: passed, 96 files already formatted
+- Phase 10 analyzed-data CSV initial Docker `ruff check .`: passed
+- Phase 10 analyzed-data CSV initial Docker `pytest`: passed, 370 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 10 analyzed-data CSV initial Docker coverage validation: passed, 370 tests, 98.99% `experiment_os_stats` coverage
+- Initial local frontend commands did not run because host `node_modules` executables were absent; no frontend result was claimed from that attempt
+- Targeted analyzed-data CSV backend validation: passed, 5 tests; Ruff passed after formatting one touched file
+- Targeted analyzed-data CSV frontend validation: passed, 2 test files and 14 tests; ESLint passed
+- Final analyzed-data CSV Docker `ruff format .`: passed, 96 files left unchanged
+- Final analyzed-data CSV Docker `ruff check .`: passed
+- Final analyzed-data CSV Docker `pytest`: passed, 372 tests, 1 existing Starlette/httpx deprecation warning
+- Final analyzed-data CSV Docker coverage validation: passed, 372 tests, 98.99% `experiment_os_stats` coverage
+- Final analyzed-data CSV frontend lint: passed
+- Final analyzed-data CSV frontend tests: passed, 7 test files and 27 tests
+- Final analyzed-data CSV frontend build: passed with the existing Plotly chunk-size warning (about 5.12 MB before gzip)
+- Analyzed-data CSV `docker compose up --build -d`: passed; backend and frontend images rebuilt and containers started
+- Runtime analyzed-data CSV verification: returned 200, `text/csv; charset=utf-8`, and attachment filename `experiment-os-analyzed-data.csv`
+- Runtime CSV omitted one missing value and preserved 4 retained values exactly as `1.25,-2.5,3.0,4.75`, with groups `A,A,B,B` and observations `1,2,1,2`
+- Runtime frontend verification: `http://127.0.0.1:5175` returned 200
 - Phase 10 results-CSV initial Docker `ruff format --check .`: passed, 96 files already formatted
 - Phase 10 results-CSV initial Docker `ruff check .`: passed
 - Phase 10 results-CSV initial Docker `pytest`: passed, 369 tests, 1 existing Starlette/httpx deprecation warning
@@ -906,13 +931,18 @@ Phase 10 - Exports in progress
 ## Files modified in the current milestone
 
 - `backend/app/api/v1/exports.py`
+- `backend/app/schemas/exports.py`
 - `backend/app/services/export_service.py`
 - `backend/tests/test_json_export.py`
 - `frontend/src/App.jsx`
 - `frontend/src/api/exports.js`
-- `frontend/src/tests/App.test.jsx`
+- `frontend/src/lib/csv.js`
 - `frontend/src/tests/exports.test.js`
 - `specs/STATUS.md`
+
+## Files deleted in the current milestone
+
+- `frontend/src/tests/csv.test.js`
 
 ## Files added in the current milestone
 
@@ -920,13 +950,13 @@ Phase 10 - Exports in progress
 
 ## Current milestone status
 
-- Phase 10 second milestone completed: typed, downloadable flattened-results CSV export
+- Phase 10 third milestone completed: typed, downloadable analyzed-data CSV export
 
 ## Next milestone
 
-Continue Phase 10 with a separate analyzed-data CSV export workflow:
+Complete Phase 10 with a limited PDF report export workflow:
 
-- export normalized A/B observations in a tabular format suitable for downstream analysis
-- define a stable column contract for binary and continuous datasets
-- verify row counts, group labels, missing-value handling and exact normalized values
-- defer PDF report export to its own later milestone
+- reuse the authoritative JSON report request and values
+- include source, configuration, group summaries, method, assumptions, results, interpretation, warnings and reproducibility information
+- generate the PDF entirely in memory without persistence
+- verify representative PDF values against the JSON reference report

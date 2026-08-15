@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from io import StringIO
 from typing import Any
 
-from app.schemas.exports import JsonExportRequest, JsonExportResponse
+from app.schemas.exports import AnalyzedDataCsvRequest, JsonExportRequest, JsonExportResponse
 
 
 def build_json_export(request: JsonExportRequest) -> JsonExportResponse:
@@ -31,6 +31,18 @@ def build_results_csv(request: JsonExportRequest) -> str:
     writer.writerow(("field", "value"))
     for field, value in _flatten_report(report):
         writer.writerow((field, _csv_value(value)))
+    return output.getvalue()
+
+
+def build_analyzed_data_csv(request: AnalyzedDataCsvRequest) -> str:
+    """Serialize retained normalized A/B observations in a stable long format."""
+    output = StringIO(newline="")
+    writer = csv.writer(output, lineterminator="\n")
+    writer.writerow(("group", "observation", "value"))
+    for group, values in (("A", request.dataset.group_a), ("B", request.dataset.group_b)):
+        retained_values = (value for value in values if value is not None)
+        for observation, value in enumerate(retained_values, start=1):
+            writer.writerow((group, observation, value))
     return output.getvalue()
 
 

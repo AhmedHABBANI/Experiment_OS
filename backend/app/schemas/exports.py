@@ -10,6 +10,12 @@ from app.schemas.descriptive import DescriptiveResponse
 from app.schemas.simulations import SimulationResponse
 
 
+class AnalyzedDataCsvRequest(BaseModel):
+    """Normalized in-memory dataset required for an analyzed-data CSV export."""
+
+    dataset: SimulationResponse
+
+
 class JsonExportRequest(BaseModel):
     """Complete in-memory experiment state required for a JSON export."""
 

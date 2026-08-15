@@ -3,13 +3,13 @@ import { useMemo, useState } from "react";
 import { analyzeBinaryExperiment, analyzeContinuousExperiment } from "./api/analyses.js";
 import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/descriptive.js";
 import { fetchBinaryDiagnostics, fetchContinuousDiagnostics } from "./api/diagnostics.js";
-import { exportJsonReport, exportResultsCsv } from "./api/exports.js";
+import { exportAnalyzedDataCsv, exportJsonReport, exportResultsCsv } from "./api/exports.js";
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
 import AnalysisResult from "./components/AnalysisResult.jsx";
 import CsvImportPanel from "./components/CsvImportPanel.jsx";
 import DiagnosticCharts from "./components/DiagnosticCharts.jsx";
 import ResamplingChart from "./components/ResamplingChart.jsx";
-import { downloadCsv, simulationToCsv } from "./lib/csv.js";
+import { downloadCsv } from "./lib/csv.js";
 import { downloadJson } from "./lib/json.js";
 
 const initialBinaryForm = {
@@ -141,12 +141,18 @@ export default function App() {
     }
   }
 
-  function handleDownload() {
+  async function handleDownload() {
     if (!result) {
       return;
     }
 
-    downloadCsv(`experiment-os-${result.metric_type}-simulation.csv`, simulationToCsv(result));
+    setError("");
+    try {
+      const content = await exportAnalyzedDataCsv(result);
+      downloadCsv("experiment-os-analyzed-data.csv", content);
+    } catch (caughtError) {
+      setError(caughtError.message);
+    }
   }
 
   async function handleJsonExport() {

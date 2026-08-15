@@ -8,6 +8,10 @@ export async function exportResultsCsv(payload) {
   return exportReport("csv", payload, "The results CSV export request failed.");
 }
 
+export async function exportAnalyzedDataCsv(dataset) {
+  return exportReport("csv/data", { dataset }, "The analyzed-data CSV export request failed.");
+}
+
 async function exportReport(format, payload, fallbackMessage) {
   const response = await fetch(`${API_PREFIX}/exports/${format}`, {
     method: "POST",

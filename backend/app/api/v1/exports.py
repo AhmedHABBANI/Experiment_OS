@@ -2,8 +2,12 @@
 
 from fastapi import APIRouter, Response
 
-from app.schemas.exports import JsonExportRequest, JsonExportResponse
-from app.services.export_service import build_json_export, build_results_csv
+from app.schemas.exports import AnalyzedDataCsvRequest, JsonExportRequest, JsonExportResponse
+from app.services.export_service import (
+    build_analyzed_data_csv,
+    build_json_export,
+    build_results_csv,
+)
 
 router = APIRouter()
 
@@ -22,4 +26,14 @@ def export_results_csv(request: JsonExportRequest) -> Response:
         content=build_results_csv(request),
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="experiment-os-results.csv"'},
+    )
+
+
+@router.post("/csv/data")
+def export_analyzed_data_csv(request: AnalyzedDataCsvRequest) -> Response:
+    """Return retained normalized observations as a downloadable CSV artifact."""
+    return Response(
+        content=build_analyzed_data_csv(request),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="experiment-os-analyzed-data.csv"'},
     )

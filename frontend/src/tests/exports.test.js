@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { exportJsonReport, exportResultsCsv } from "../api/exports.js";
+import { exportAnalyzedDataCsv, exportJsonReport, exportResultsCsv } from "../api/exports.js";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -49,6 +49,20 @@ describe("JSON export API client", () => {
     expect(globalThis.fetch).toHaveBeenCalledWith(
       "/api/v1/exports/csv",
       expect.objectContaining({ method: "POST" })
+    );
+  });
+
+  it("posts a normalized dataset and returns the analyzed-data CSV unchanged", async () => {
+    const dataset = { metric_type: "binary", group_a: [0, 1], group_b: [1], metadata: {} };
+    const csv = "group,observation,value\nA,1,0.0\nA,2,1.0\nB,1,1.0\n";
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: true, text: async () => csv });
+
+    const content = await exportAnalyzedDataCsv(dataset);
+
+    expect(content).toBe(csv);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/exports/csv/data",
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ dataset }) })
     );
   });
 });

@@ -106,3 +106,49 @@ def test_results_csv_matches_json_reference_values() -> None:
     assert rows["analysis_result.reject_null"] == "true"
     assert rows["analysis_result.assumptions"] == '["The groups are independent."]'
     assert rows["dataset.metadata.seed"] == str(reference["dataset"]["metadata"]["seed"])
+
+
+def test_analyzed_data_csv_preserves_retained_continuous_observations() -> None:
+    client = TestClient(create_app())
+    dataset = {
+        "metric_type": "continuous",
+        "group_a": [1.25, None, -2.5],
+        "group_b": [3.0, 4.75],
+        "metadata": {"source": "csv_import"},
+    }
+
+    response = client.post("/api/v1/exports/csv/data", json={"dataset": dataset})
+    rows = list(csv.DictReader(StringIO(response.text)))
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert response.headers["content-disposition"] == (
+        'attachment; filename="experiment-os-analyzed-data.csv"'
+    )
+    assert rows == [
+        {"group": "A", "observation": "1", "value": "1.25"},
+        {"group": "A", "observation": "2", "value": "-2.5"},
+        {"group": "B", "observation": "1", "value": "3.0"},
+        {"group": "B", "observation": "2", "value": "4.75"},
+    ]
+
+
+def test_analyzed_data_csv_preserves_normalized_binary_values() -> None:
+    client = TestClient(create_app())
+    dataset = {
+        "metric_type": "binary",
+        "group_a": [0, 1, 1],
+        "group_b": [1, 0],
+        "metadata": {"source": "simulation", "seed": 42},
+    }
+
+    response = client.post("/api/v1/exports/csv/data", json={"dataset": dataset})
+    rows = list(csv.DictReader(StringIO(response.text)))
+
+    assert [(row["group"], float(row["value"])) for row in rows] == [
+        ("A", 0.0),
+        ("A", 1.0),
+        ("A", 1.0),
+        ("B", 1.0),
+        ("B", 0.0),
+    ]
