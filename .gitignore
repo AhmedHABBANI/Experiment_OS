@@ -34,6 +34,13 @@ reports/generated/
 tmp/
 *.log
 
+# Private local interview material
+private/
+
+# Private Codex development material
+CODEX.md
+specs/
+
 # Frontend
 node_modules/
 frontend/dist/
