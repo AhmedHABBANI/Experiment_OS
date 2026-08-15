@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 10 - Exports in progress
+Phase 10 - Exports completed
 
 ## Completed
 
@@ -352,9 +352,36 @@ Phase 10 - Exports in progress
 - Binary values remain normalized to zero or one and continuous values retain their numeric value
 - Browser-side dataset serialization removed; the backend now owns the analyzed-data artifact
 - Existing dataset download action now retrieves `experiment-os-analyzed-data.csv` from the API
+- `POST /api/v1/reports/pdf` implemented from the authoritative JSON-report request contract
+- PDF reports are generated entirely in memory with ReportLab and returned as attachments
+- PDF includes title/date, source, configuration, group summaries, standardized analysis values, assumptions, interpretation, warnings and reproducibility metadata
+- PDF includes an A/B comparison chart based on existing descriptive proportions or means
+- Large resampling distributions are omitted from tabular PDF output while their configuration, estimates and reproducibility metadata remain available
+- Frontend PDF client and browser download action implemented for complete analyses
+- ReportLab added as the PDF runtime dependency and pypdf as a test-only extraction dependency
 
 ## Validation
 
+- Phase 10 PDF initial Docker `ruff format --check .`: passed, 96 files already formatted
+- Phase 10 PDF initial Docker `ruff check .`: passed
+- Phase 10 PDF initial Docker `pytest`: passed, 372 tests, 1 existing Starlette/httpx deprecation warning
+- Phase 10 PDF initial Docker coverage validation: passed, 372 tests, 98.99% `experiment_os_stats` coverage
+- Phase 10 PDF initial frontend lint: passed
+- Phase 10 PDF initial frontend tests: passed, 7 test files and 27 tests
+- Phase 10 PDF initial frontend build: passed with the existing Plotly chunk-size warning
+- First targeted PDF backend validation stopped before pytest on a Ruff import-layout error; no test result was claimed
+- Targeted PDF backend validation after import correction: passed, 6 tests; Ruff passed
+- Targeted PDF frontend validation: passed, 2 test files and 15 tests; ESLint passed
+- Final PDF Docker `ruff format .`: passed, 96 files left unchanged
+- Final PDF Docker `ruff check .`: passed
+- Final PDF Docker `pytest`: passed, 373 tests, 1 existing Starlette/httpx deprecation warning
+- Final PDF Docker coverage validation: passed, 373 tests, 98.99% `experiment_os_stats` coverage
+- Final PDF frontend lint: passed
+- Final PDF frontend tests: passed, 7 test files and 28 tests
+- Final PDF frontend build: passed with the existing Plotly chunk-size warning (about 5.12 MB before gzip)
+- PDF `docker compose up --build -d`: passed; ReportLab was installed and both containers started
+- Runtime PDF verification: returned 200, `application/pdf`, attachment filename `experiment-os-report.pdf`, `%PDF-` signature and a 5167-byte document
+- Runtime frontend verification: `http://127.0.0.1:5175` returned 200
 - Phase 10 analyzed-data CSV initial Docker `ruff format --check .`: passed, 96 files already formatted
 - Phase 10 analyzed-data CSV initial Docker `ruff check .`: passed
 - Phase 10 analyzed-data CSV initial Docker `pytest`: passed, 370 tests, 1 existing Starlette/httpx deprecation warning
@@ -930,33 +957,35 @@ Phase 10 - Exports in progress
 
 ## Files modified in the current milestone
 
+- `backend/pyproject.toml`
+- `backend/app/api/router.py`
 - `backend/app/api/v1/exports.py`
-- `backend/app/schemas/exports.py`
 - `backend/app/services/export_service.py`
 - `backend/tests/test_json_export.py`
 - `frontend/src/App.jsx`
 - `frontend/src/api/exports.js`
-- `frontend/src/lib/csv.js`
+- `frontend/src/tests/App.test.jsx`
 - `frontend/src/tests/exports.test.js`
 - `specs/STATUS.md`
 
-## Files deleted in the current milestone
-
-- `frontend/src/tests/csv.test.js`
-
 ## Files added in the current milestone
+
+- `frontend/src/lib/pdf.js`
+
+## Files deleted in the current milestone
 
 - None
 
 ## Current milestone status
 
-- Phase 10 third milestone completed: typed, downloadable analyzed-data CSV export
+- Phase 10 fourth milestone completed: in-memory downloadable PDF report
+- Phase 10 completed: JSON, flattened-results CSV, analyzed-data CSV and PDF exports are implemented
 
 ## Next milestone
 
-Complete Phase 10 with a limited PDF report export workflow:
+Start Phase 11 with a limited CI quality-gates milestone:
 
-- reuse the authoritative JSON report request and values
-- include source, configuration, group summaries, method, assumptions, results, interpretation, warnings and reproducibility information
-- generate the PDF entirely in memory without persistence
-- verify representative PDF values against the JSON reference report
+- inspect the existing GitHub Actions state against the roadmap
+- add or complete Python lint, tests and coverage gates
+- add frontend lint, tests and production-build gates
+- defer documentation guides and screenshots to separate Phase 11 milestones

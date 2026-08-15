@@ -2,9 +2,10 @@
 
 import csv
 from datetime import datetime
-from io import StringIO
+from io import BytesIO, StringIO
 
 from fastapi.testclient import TestClient
+from pypdf import PdfReader
 
 from app.main import create_app
 
@@ -152,3 +153,36 @@ def test_analyzed_data_csv_preserves_normalized_binary_values() -> None:
         ("B", 1.0),
         ("B", 0.0),
     ]
+
+
+def test_pdf_report_matches_json_reference_values() -> None:
+    client = TestClient(create_app())
+    request = _export_request()
+    request["analysis_result"]["warnings"] = [
+        {
+            "code": "REFERENCE_WARNING",
+            "message": "A representative warning.",
+            "severity": "warning",
+            "details": {},
+        }
+    ]
+
+    response = client.post("/api/v1/reports/pdf", json=request)
+    reader = PdfReader(BytesIO(response.content))
+    text = "\n".join(page.extract_text() or "" for page in reader.pages)
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.headers["content-disposition"] == (
+        'attachment; filename="experiment-os-report.pdf"'
+    )
+    assert response.content.startswith(b"%PDF-")
+    assert "ExperimentOS experiment report" in text
+    assert "welch_t_test" in text
+    assert "2.345678" in text
+    assert "0.019876" in text
+    assert "1.25" in text
+    assert "The groups are independent." in text
+    assert "REFERENCE_WARNING" in text
+    assert "seed" in text
+    assert "42" in text

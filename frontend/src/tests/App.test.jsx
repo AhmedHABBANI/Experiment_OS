@@ -110,6 +110,7 @@ describe("App", () => {
     expect(screen.getByRole("button", { name: "Download CSV" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Download JSON" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Download results CSV" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Download PDF" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Group summaries" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Comparison" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Distribution diagnostics" })).toBeInTheDocument();

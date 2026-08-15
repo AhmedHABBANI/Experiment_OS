@@ -3,7 +3,12 @@ import { useMemo, useState } from "react";
 import { analyzeBinaryExperiment, analyzeContinuousExperiment } from "./api/analyses.js";
 import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/descriptive.js";
 import { fetchBinaryDiagnostics, fetchContinuousDiagnostics } from "./api/diagnostics.js";
-import { exportAnalyzedDataCsv, exportJsonReport, exportResultsCsv } from "./api/exports.js";
+import {
+  exportAnalyzedDataCsv,
+  exportJsonReport,
+  exportPdfReport,
+  exportResultsCsv
+} from "./api/exports.js";
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
 import AnalysisResult from "./components/AnalysisResult.jsx";
 import CsvImportPanel from "./components/CsvImportPanel.jsx";
@@ -11,6 +16,7 @@ import DiagnosticCharts from "./components/DiagnosticCharts.jsx";
 import ResamplingChart from "./components/ResamplingChart.jsx";
 import { downloadCsv } from "./lib/csv.js";
 import { downloadJson } from "./lib/json.js";
+import { downloadPdf } from "./lib/pdf.js";
 
 const initialBinaryForm = {
   n_a: 100,
@@ -183,6 +189,20 @@ export default function App() {
     }
   }
 
+  async function handlePdfExport() {
+    if (!result || !descriptiveSummary || !analysisResult) {
+      return;
+    }
+
+    setError("");
+    try {
+      const content = await exportPdfReport(buildReportPayload());
+      downloadPdf("experiment-os-report.pdf", content);
+    } catch (caughtError) {
+      setError(caughtError.message);
+    }
+  }
+
   function buildReportPayload() {
     return {
       source: result.metadata?.source === "csv_import" ? "csv_import" : "simulation",
@@ -276,6 +296,9 @@ export default function App() {
                         </button>
                         <button type="button" className="secondary-action" onClick={handleResultsCsvExport}>
                           Download results CSV
+                        </button>
+                        <button type="button" className="secondary-action" onClick={handlePdfExport}>
+                          Download PDF
                         </button>
                       </>
                     ) : null}

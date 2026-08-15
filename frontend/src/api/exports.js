@@ -12,6 +12,21 @@ export async function exportAnalyzedDataCsv(dataset) {
   return exportReport("csv/data", { dataset }, "The analyzed-data CSV export request failed.");
 }
 
+export async function exportPdfReport(payload) {
+  const response = await fetch(`${API_PREFIX}/reports/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorPayload = await response.json().catch(() => null);
+    throw new Error(errorPayload?.error?.message ?? "The PDF report request failed.");
+  }
+
+  return response.blob();
+}
+
 async function exportReport(format, payload, fallbackMessage) {
   const response = await fetch(`${API_PREFIX}/exports/${format}`, {
     method: "POST",

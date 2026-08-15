@@ -6,10 +6,12 @@ from app.schemas.exports import AnalyzedDataCsvRequest, JsonExportRequest, JsonE
 from app.services.export_service import (
     build_analyzed_data_csv,
     build_json_export,
+    build_pdf_report,
     build_results_csv,
 )
 
 router = APIRouter()
+reports_router = APIRouter()
 
 
 @router.post("/json", response_model=JsonExportResponse)
@@ -36,4 +38,14 @@ def export_analyzed_data_csv(request: AnalyzedDataCsvRequest) -> Response:
         content=build_analyzed_data_csv(request),
         media_type="text/csv",
         headers={"Content-Disposition": 'attachment; filename="experiment-os-analyzed-data.csv"'},
+    )
+
+
+@reports_router.post("/pdf")
+def export_pdf_report(request: JsonExportRequest) -> Response:
+    """Return a complete in-memory experiment report as a downloadable PDF."""
+    return Response(
+        content=build_pdf_report(request),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="experiment-os-report.pdf"'},
     )

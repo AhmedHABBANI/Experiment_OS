@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { exportAnalyzedDataCsv, exportJsonReport, exportResultsCsv } from "../api/exports.js";
+import {
+  exportAnalyzedDataCsv,
+  exportJsonReport,
+  exportPdfReport,
+  exportResultsCsv
+} from "../api/exports.js";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -63,6 +68,20 @@ describe("JSON export API client", () => {
     expect(globalThis.fetch).toHaveBeenCalledWith(
       "/api/v1/exports/csv/data",
       expect.objectContaining({ method: "POST", body: JSON.stringify({ dataset }) })
+    );
+  });
+
+  it("returns the PDF report blob unchanged", async () => {
+    const report = { source: "simulation", dataset: { metric_type: "continuous" } };
+    const pdf = new Blob(["%PDF-test"], { type: "application/pdf" });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue({ ok: true, blob: async () => pdf });
+
+    const content = await exportPdfReport(report);
+
+    expect(content).toBe(pdf);
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "/api/v1/reports/pdf",
+      expect.objectContaining({ method: "POST", body: JSON.stringify(report) })
     );
   });
 });
