@@ -1,0 +1,9 @@
+visitor_id,variant,converted
+B001,control,no
+B002,treatment,yes
+B003,control,yes
+B004,treatment,no
+B005,control,no
+B006,treatment,yes
+B007,control,yes
+B008,treatment,yes

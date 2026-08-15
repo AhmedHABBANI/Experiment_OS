@@ -67,10 +67,14 @@ export default function CsvImportPanel({ onValidated }) {
   return (
     <div className="csv-import">
       <form className="tool-panel" onSubmit={handlePreview}>
-        <h2>CSV import</h2>
-        <label className="field">
-          <span>CSV file</span>
+        <StepHeading number="1" title="Select data" description="Choose a CSV file and confirm its delimiter." />
+        <label className={`file-picker ${file ? "selected" : ""}`}>
+          <span className="file-picker-title">CSV file</span>
+          <span className="file-picker-description">
+            {file ? file.name : "Select a UTF-8 CSV from this device"}
+          </span>
           <input
+            aria-label="CSV file"
             type="file"
             accept=".csv,text/csv"
             onChange={(event) => {
@@ -80,6 +84,12 @@ export default function CsvImportPanel({ onValidated }) {
             }}
           />
         </label>
+        {file ? (
+          <div className="file-metadata" aria-label="Selected file">
+            <span>{formatBytes(file.size)}</span>
+            <span>Processed in memory</span>
+          </div>
+        ) : null}
         <label className="field">
           <span>Delimiter</span>
           <select value={delimiter} onChange={(event) => setDelimiter(event.target.value)}>
@@ -93,18 +103,24 @@ export default function CsvImportPanel({ onValidated }) {
         <button className="primary-action" type="submit" disabled={status === "previewing"}>
           {status === "previewing" ? "Reading..." : "Preview CSV"}
         </button>
+        <p className="privacy-note">The file is validated locally and is never stored.</p>
         {error ? <p className="error-message" role="alert">{error}</p> : null}
+        <p className="sr-only" aria-live="polite">
+          {status === "previewing" ? "CSV preview is loading." : ""}
+        </p>
       </form>
 
       {preview ? (
         <>
           <section className="csv-preview" aria-label="CSV preview">
-            <div className="result-header">
-              <div>
-                <p className="eyebrow">{preview.delimiter === "\t" ? "tab" : preview.delimiter} separated</p>
-                <h2>{preview.filename}</h2>
+            <StepHeading number="2" title="Inspect columns" description="Review inferred types and missing values before mapping." />
+            <div className="preview-file-heading">
+              <h3>{preview.filename}</h3>
+              <div className="preview-facts">
+                <span>{preview.row_count} rows</span>
+                <span>{columns.length} columns</span>
+                <span>{delimiterLabel(preview.delimiter)} delimiter</span>
               </div>
-              <strong>{preview.row_count} rows</strong>
             </div>
             <div className="table-scroll">
               <table className="preview-table">
@@ -118,35 +134,62 @@ export default function CsvImportPanel({ onValidated }) {
             </div>
             <div className="column-summary">
               {columns.map((column) => (
-                <span key={column.name}><strong>{column.name}</strong> {column.inferred_type}, {column.missing_count} missing</span>
+                <span key={column.name}>
+                  <strong>{column.name}</strong>
+                  <i>{column.inferred_type}</i>
+                  <em>{column.missing_count} missing</em>
+                </span>
               ))}
             </div>
           </section>
 
           <form className="mapping-panel" onSubmit={handleValidate}>
-            <div className="section-heading"><p className="eyebrow">mapping</p><h2>Map the experiment</h2></div>
-            <SelectField label="Group column" name="group_column" value={mapping.group_column} columns={columns} onChange={setMapping} />
-            <TextField label="Group A value" name="group_a_value" value={mapping.group_a_value} onChange={setMapping} />
-            <TextField label="Group B value" name="group_b_value" value={mapping.group_b_value} onChange={setMapping} />
-            <SelectField label="Metric column" name="metric_column" value={mapping.metric_column} columns={columns} onChange={setMapping} />
-            <label className="field">
-              <span>Metric type</span>
-              <select value={mapping.metric_type} onChange={(event) => setMapping((current) => ({ ...current, metric_type: event.target.value }))}>
-                <option value="continuous">Continuous</option><option value="binary">Binary</option>
-              </select>
-            </label>
-            {mapping.metric_type === "binary" ? (
-              <>
-                <TextField label="Success value (1)" name="binary_success_value" value={mapping.binary_success_value} onChange={setMapping} />
-                <TextField label="Failure value (0)" name="binary_failure_value" value={mapping.binary_failure_value} onChange={setMapping} />
-              </>
-            ) : null}
+            <StepHeading number="3" title="Map the experiment" description="Assign control, treatment and metric columns explicitly." />
+            <fieldset className="mapping-group">
+              <legend>Experiment groups</legend>
+              <SelectField label="Group column" name="group_column" value={mapping.group_column} columns={columns} onChange={setMapping} />
+              <div className="mapping-pair">
+                <TextField label="Group A value" name="group_a_value" value={mapping.group_a_value} onChange={setMapping} />
+                <TextField label="Group B value" name="group_b_value" value={mapping.group_b_value} onChange={setMapping} />
+              </div>
+            </fieldset>
+            <fieldset className="mapping-group">
+              <legend>Analyzed metric</legend>
+              <SelectField label="Metric column" name="metric_column" value={mapping.metric_column} columns={columns} onChange={setMapping} />
+              <label className="field">
+                <span>Metric type</span>
+                <select value={mapping.metric_type} onChange={(event) => setMapping((current) => ({ ...current, metric_type: event.target.value }))}>
+                  <option value="continuous">Continuous</option><option value="binary">Binary</option>
+                </select>
+              </label>
+              {mapping.metric_type === "binary" ? (
+                <div className="mapping-pair">
+                  <TextField label="Success value (1)" name="binary_success_value" value={mapping.binary_success_value} onChange={setMapping} />
+                  <TextField label="Failure value (0)" name="binary_failure_value" value={mapping.binary_failure_value} onChange={setMapping} />
+                </div>
+              ) : null}
+            </fieldset>
             <button className="primary-action" type="submit" disabled={status === "validating"}>
               {status === "validating" ? "Validating..." : "Validate dataset"}
             </button>
+            <p className="sr-only" aria-live="polite">
+              {status === "validating" ? "Dataset validation is running." : ""}
+            </p>
           </form>
         </>
       ) : null}
+    </div>
+  );
+}
+
+function StepHeading({ number, title, description }) {
+  return (
+    <div className="step-heading">
+      <span aria-hidden="true">{number}</span>
+      <div>
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </div>
     </div>
   );
 }
@@ -161,4 +204,20 @@ function TextField({ label, name, value, onChange }) {
 
 function formatCell(value) {
   return value === null || value === undefined ? "" : String(value);
+}
+
+function delimiterLabel(delimiter) {
+  if (delimiter === "\t") {
+    return "Tab";
+  }
+
+  return delimiter;
+}
+
+function formatBytes(value) {
+  if (value < 1024) {
+    return `${value} B`;
+  }
+
+  return `${(value / 1024).toFixed(1)} KB`;
 }

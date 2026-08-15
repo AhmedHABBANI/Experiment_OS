@@ -13,6 +13,16 @@ afterEach(() => {
 });
 
 describe("App", () => {
+  it("presents the local analysis workspace and its initial context", () => {
+    render(<App />);
+
+    expect(screen.getByText("Frequentist A/B analysis")).toBeInTheDocument();
+    expect(screen.getByLabelText("Application status")).toHaveTextContent("Local workspace");
+    expect(screen.getByLabelText("Current experiment context")).toHaveTextContent(
+      "SourceSimulationMetricBinaryDirectionB - A"
+    );
+  });
+
   it("runs a binary simulation and renders the preview", async () => {
     vi.spyOn(globalThis, "fetch")
       .mockResolvedValueOnce({
@@ -107,17 +117,19 @@ describe("App", () => {
     fireEvent.click(screen.getByRole("button", { name: "Run simulation" }));
 
     await waitFor(() => expect(screen.getByText("Generated dataset")).toBeInTheDocument());
-    expect(screen.getByRole("button", { name: "Download CSV" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Download JSON" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Download results CSV" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Download PDF" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Data CSV" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "JSON" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Results CSV" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "PDF report" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Group summaries" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Comparison" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Distribution diagnostics" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Distribution diagnostics" })
+    ).toBeInTheDocument();
     expect(screen.getByText("Observed success rates")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Statistical analysis" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Statistical analysis" })).toBeInTheDocument();
     expect(screen.getByText("Reject H0")).toBeInTheDocument();
-    expect(screen.getByText("SMALL_EXPECTED_COUNT")).toBeInTheDocument();
+    expect(screen.getByText("SMALL EXPECTED COUNT")).toBeInTheDocument();
     expect(globalThis.fetch).toHaveBeenCalledWith(
       "/api/v1/simulations/binary",
       expect.objectContaining({ method: "POST" })
@@ -138,8 +150,20 @@ describe("App", () => {
 
   it("switches to the continuous form", () => {
     render(<App />);
+    expect(screen.getByRole("button", { name: "Binary" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
     fireEvent.click(screen.getByRole("button", { name: "Continuous" }));
 
+    expect(screen.getByRole("button", { name: "Binary" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+    expect(screen.getByRole("button", { name: "Continuous" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
     expect(screen.getByRole("heading", { name: "Continuous simulation" })).toBeInTheDocument();
     expect(screen.getByLabelText("Distribution")).toBeInTheDocument();
     expect(screen.getByLabelText("Test")).toHaveValue("student-t");
@@ -220,7 +244,7 @@ describe("App", () => {
     fireEvent.change(screen.getByLabelText("Alternative"), { target: { value: "greater" } });
     fireEvent.click(screen.getByRole("button", { name: "Run simulation" }));
 
-    await screen.findByRole("heading", { name: "Statistical analysis" });
+    await screen.findByRole("region", { name: "Statistical analysis" });
     expect(screen.getByText("Student T Test")).toBeInTheDocument();
     expect(screen.getByText("Reject H0")).toBeInTheDocument();
     expect(screen.getByLabelText("Deterministic interpretation")).toHaveTextContent(
@@ -363,12 +387,16 @@ describe("App", () => {
 
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "Import CSV" }));
+    expect(screen.getByRole("heading", { name: "Select data" })).toBeInTheDocument();
     const file = new File(["variant,revenue\ncontrol,10\ntreatment,12"], "experiment.csv", { type: "text/csv" });
     fireEvent.change(screen.getByLabelText("CSV file"), { target: { files: [file] } });
+    expect(screen.getByLabelText("Selected file")).toHaveTextContent("Processed in memory");
     fireEvent.click(screen.getByRole("button", { name: "Preview CSV" }));
 
     await screen.findByRole("heading", { name: "experiment.csv" });
-    expect(screen.getByText((_, element) => element?.textContent === "revenue number, 1 missing")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Inspect columns" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Map the experiment" })).toBeInTheDocument();
+    expect(screen.getByText((_, element) => element?.textContent === "revenuenumber1 missing")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Group A value"), { target: { value: "control" } });
     fireEvent.change(screen.getByLabelText("Group B value"), { target: { value: "treatment" } });
     fireEvent.click(screen.getByRole("button", { name: "Validate dataset" }));

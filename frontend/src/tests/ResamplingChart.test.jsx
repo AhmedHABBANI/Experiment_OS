@@ -4,8 +4,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import ResamplingChart from "../components/ResamplingChart.jsx";
 
 vi.mock("react-plotly.js", () => ({
-  default: ({ data, layout }) => (
-    <div data-testid="plotly-chart" data-points={data[0].x.length} data-lines={layout.shapes.length}>
+  default: ({ config, data, layout }) => (
+    <div
+      data-testid="plotly-chart"
+      data-points={data[0].x.length}
+      data-lines={layout.shapes.length}
+      data-grid-color={layout.yaxis.gridcolor}
+      data-responsive={config.responsive}
+    >
       {layout.title.text}
     </div>
   )
@@ -28,6 +34,8 @@ describe("ResamplingChart", () => {
     const chart = screen.getByTestId("plotly-chart");
     expect(chart).toHaveAttribute("data-points", "4");
     expect(chart).toHaveAttribute("data-lines", "1");
+    expect(chart).toHaveAttribute("data-grid-color", "#e2e8ea");
+    expect(chart).toHaveAttribute("data-responsive", "true");
     expect(screen.getByText(/4 permutations under H0/)).toBeInTheDocument();
     expect(screen.getByText(/observed B - A mean difference is 1.5000/)).toBeInTheDocument();
   });

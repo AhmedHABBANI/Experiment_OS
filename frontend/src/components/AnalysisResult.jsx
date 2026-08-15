@@ -1,33 +1,33 @@
 export default function AnalysisResult({ result }) {
   const isEstimationOnly = result.reject_null === null;
+  const decisionLabel = isEstimationOnly
+    ? "Estimation only"
+    : result.reject_null
+      ? "Reject H0"
+      : "Do not reject H0";
   const metrics = [
-    ["statistic", "statistic"],
-    ["p_value", "p-value"],
-    ["estimate", "B - A estimate"],
-    ["effect_size", result.effect_size_name ?? "effect size"]
+    ["estimate", "B - A estimate", "primary"],
+    ["p_value", "p-value", "primary"],
+    ["statistic", "test statistic", "secondary"],
+    ["effect_size", result.effect_size_name ?? "effect size", "secondary"]
   ];
 
   return (
     <section className="analysis-section" aria-label="Statistical analysis">
-      <div className="analysis-heading">
+      <div className={`decision-panel ${isEstimationOnly ? "estimate" : result.reject_null ? "reject" : "retain"}`}>
         <div>
-          <p className="eyebrow">analysis</p>
-          <h3>Statistical analysis</h3>
+          <p className="decision-kicker">Statistical decision</p>
+          <h3>{decisionLabel}</h3>
+          <p className="analysis-method">{formatTestName(result.test_name)}</p>
         </div>
-        <span className={`decision-badge ${result.reject_null ? "reject" : "retain"}`}>
-          {isEstimationOnly
-            ? "Estimation only"
-            : result.reject_null
-              ? "Reject H0"
-              : "Do not reject H0"}
+        <span className="decision-threshold">
+          {isEstimationOnly ? "Interval estimate" : `alpha ${formatValue(result.alpha)}`}
         </span>
       </div>
 
-      <p className="analysis-method">{formatTestName(result.test_name)}</p>
-
       <dl className="analysis-metrics">
-        {metrics.map(([key, label]) => (
-          <div key={key}>
+        {metrics.map(([key, label, emphasis]) => (
+          <div className={emphasis} key={key}>
             <dt>{label}</dt>
             <dd>{formatValue(result[key])}</dd>
           </div>
@@ -35,23 +35,26 @@ export default function AnalysisResult({ result }) {
       </dl>
 
       {result.confidence_interval ? (
-        <p className="interval-summary">
-          {formatPercent(result.confidence_interval.level)} confidence interval: [
-          {formatValue(result.confidence_interval.lower)}, {formatValue(result.confidence_interval.upper)}]
-        </p>
+        <div className="interval-summary">
+          <span>{formatPercent(result.confidence_interval.level)} confidence interval</span>
+          <strong>[{formatValue(result.confidence_interval.lower)}, {formatValue(result.confidence_interval.upper)}]</strong>
+        </div>
       ) : null}
 
-      <div className="hypotheses">
+      <div className="analysis-detail-grid">
+        <div className="hypotheses">
+          <h4>Question and hypotheses</h4>
         {result.interpretation.question ? <p>{result.interpretation.question}</p> : null}
         <p>
-          <strong>H0</strong> {result.interpretation.null_hypothesis}
+            <strong>H0</strong><span>{result.interpretation.null_hypothesis}</span>
         </p>
         <p>
-          <strong>H1</strong> {result.interpretation.alternative_hypothesis}
+            <strong>H1</strong><span>{result.interpretation.alternative_hypothesis}</span>
         </p>
-      </div>
+        </div>
 
-      <div className="interpretation-summary" aria-label="Deterministic interpretation">
+        <div className="interpretation-summary" aria-label="Deterministic interpretation">
+          <h4>Interpretation</h4>
         {[
           ["decision", "Decision"],
           ["effect", "Effect"],
@@ -61,17 +64,20 @@ export default function AnalysisResult({ result }) {
         ].map(([key, label]) =>
           result.interpretation[key] ? (
             <p key={key}>
-              <strong>{label}</strong> {result.interpretation[key]}
+                <strong>{label}</strong><span>{result.interpretation[key]}</span>
             </p>
           ) : null
         )}
+        </div>
       </div>
 
       {result.warnings.length > 0 ? (
         <div className="warning-list" aria-label="Statistical warnings">
+          <h4>Statistical cautions</h4>
           {result.warnings.map((warning) => (
             <p key={warning.code}>
-              <strong>{warning.code}</strong> {warning.message}
+              <strong>{warning.code.replaceAll("_", " ")}</strong>
+              <span>{warning.message}</span>
             </p>
           ))}
         </div>

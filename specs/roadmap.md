@@ -417,6 +417,56 @@ Les valeurs du PDF et du CSV doivent correspondre au JSON de référence.
 
 ---
 
+## Phase 11.5 — Refonte visuelle du workspace
+
+### Direction
+
+- interface professionnelle, sobre et propre à un outil d'analyse statistique ;
+- identité visuelle ExperimentOS plus affirmée sans composition marketing ;
+- hiérarchie claire entre configuration, données, résultats et interprétation ;
+- densité maîtrisée pour permettre la lecture et la comparaison répétées ;
+- cohérence complète sur desktop, tablette et mobile.
+
+### Système visuel
+
+- palette fonctionnelle avec couleurs distinctes pour A, B, succès, prudence et erreur ;
+- typographie, espacements, bordures, ombres et rayons harmonisés ;
+- boutons, champs, contrôles segmentés, badges et tableaux cohérents ;
+- états hover, focus, disabled, loading, empty, success et error soignés ;
+- iconographie Lucide utilisée uniquement lorsqu'elle améliore le repérage.
+
+### Workspace
+
+- en-tête produit compact et immédiatement identifiable ;
+- configuration mieux découpée sans masquer les paramètres statistiques ;
+- actions principales et secondaires hiérarchisées ;
+- résultats organisés pour faire ressortir décision, effet, incertitude et avertissements ;
+- graphiques intégrés visuellement au reste de l'interface ;
+- import CSV et exports alignés avec le même langage visuel.
+
+### Contraintes
+
+- aucune modification des calculs statistiques ou des contrats API ;
+- aucune persistance, authentification ou dépendance externe métier ;
+- aucune landing page ajoutée devant le workspace ;
+- accessibilité clavier, contrastes et résumés textuels préservés ;
+- pas de dépendance frontend supplémentaire sans besoin démontré.
+
+### Validation
+
+- tests frontend adaptés aux composants ou interactions modifiés ;
+- ESLint, Vitest et build Vite réussis ;
+- contrôle visuel réel sur desktop et mobile ;
+- absence de débordement, chevauchement ou texte tronqué ;
+- parcours simulation, import, analyse et export toujours utilisables.
+
+### Critère de sortie
+
+Le workspace est visuellement cohérent, agréable et crédible comme produit professionnel,
+sans réduction de sa précision statistique ni régression fonctionnelle ou d'accessibilité.
+
+---
+
 ## Phase 12 — Version portfolio
 
 ### Livrables

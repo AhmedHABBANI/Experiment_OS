@@ -1,11 +1,15 @@
 """API error handling."""
 
+import logging
 from typing import Any
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from experiment_os_stats import ExperimentOSError
+
+logger = logging.getLogger(__name__)
 
 
 class DatasetUploadError(Exception):
@@ -48,6 +52,44 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(
             status_code=error.status_code,
             content=error_payload(error.code, error.message, error.details),
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def handle_request_validation_error(
+        _request: Request,
+        error: RequestValidationError,
+    ) -> JSONResponse:
+        controlled_errors = [
+            {
+                "location": [str(part) for part in item["loc"]],
+                "message": item["msg"],
+                "type": item["type"],
+            }
+            for item in error.errors()
+        ]
+        return JSONResponse(
+            status_code=422,
+            content=error_payload(
+                "INVALID_REQUEST",
+                "The request does not match the expected API contract.",
+                {"errors": controlled_errors},
+            ),
+        )
+
+    @app.exception_handler(Exception)
+    async def handle_unexpected_error(request: Request, error: Exception) -> JSONResponse:
+        logger.error(
+            "Unhandled API error on %s %s",
+            request.method,
+            request.url.path,
+            exc_info=(type(error), error, error.__traceback__),
+        )
+        return JSONResponse(
+            status_code=500,
+            content=error_payload(
+                "INTERNAL_ERROR",
+                "An unexpected internal error occurred.",
+            ),
         )
 
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 
 import { analyzeBinaryExperiment, analyzeContinuousExperiment } from "./api/analyses.js";
 import { summarizeBinaryExperiment, summarizeContinuousExperiment } from "./api/descriptive.js";
@@ -12,11 +12,12 @@ import {
 import { simulateBinaryExperiment, simulateContinuousExperiment } from "./api/simulations.js";
 import AnalysisResult from "./components/AnalysisResult.jsx";
 import CsvImportPanel from "./components/CsvImportPanel.jsx";
-import DiagnosticCharts from "./components/DiagnosticCharts.jsx";
-import ResamplingChart from "./components/ResamplingChart.jsx";
 import { downloadCsv } from "./lib/csv.js";
 import { downloadJson } from "./lib/json.js";
 import { downloadPdf } from "./lib/pdf.js";
+
+const DiagnosticCharts = lazy(() => import("./components/DiagnosticCharts.jsx"));
+const ResamplingChart = lazy(() => import("./components/ResamplingChart.jsx"));
 
 const initialBinaryForm = {
   n_a: 100,
@@ -219,13 +220,29 @@ export default function App() {
   return (
     <main className="app-shell">
       <section className="workspace" aria-labelledby="page-title">
+        <header className="product-header">
+          <div className="product-brand">
+            <span className="brand-mark" aria-hidden="true">OS</span>
+            <div>
+              <strong>ExperimentOS</strong>
+              <span>Frequentist A/B analysis</span>
+            </div>
+          </div>
+          <div className="product-status" aria-label="Application status">
+            <span><i className="status-dot" aria-hidden="true" />Local workspace</span>
+            <span>Session only</span>
+          </div>
+        </header>
+
         <div className="page-heading">
           <div>
-            <p className="eyebrow">ExperimentOS</p>
+            <p className="eyebrow">Analysis workspace</p>
             <h1 id="page-title">Experiment workspace</h1>
+            <p className="page-description">Configure, analyze and interpret one A/B metric at a time.</p>
           </div>
           <div className="mode-toggle" aria-label="Data source">
             <button
+              aria-pressed={source === "simulation"}
               className={source === "simulation" ? "active" : ""}
               type="button"
               onClick={() => {
@@ -236,6 +253,7 @@ export default function App() {
               Simulate
             </button>
             <button
+              aria-pressed={source === "csv"}
               className={source === "csv" ? "active" : ""}
               type="button"
               onClick={() => {
@@ -248,12 +266,18 @@ export default function App() {
           </div>
         </div>
 
+        <div className="workspace-context" aria-label="Current experiment context">
+          <span><strong>Source</strong>{source === "simulation" ? "Simulation" : "CSV import"}</span>
+          <span><strong>Metric</strong>{mode === "binary" ? "Binary" : "Continuous"}</span>
+          <span><strong>Direction</strong>B - A</span>
+        </div>
+
         <div className="content-grid">
           {source === "simulation" ? (
             <form className="tool-panel" onSubmit={handleSubmit}>
               <div className="metric-toggle" aria-label="Metric type">
-                <button className={mode === "binary" ? "active" : ""} type="button" onClick={() => { setMode("binary"); resetResults(); }}>Binary</button>
-                <button className={mode === "continuous" ? "active" : ""} type="button" onClick={() => { setMode("continuous"); resetResults(); }}>Continuous</button>
+                <button aria-pressed={mode === "binary"} className={mode === "binary" ? "active" : ""} type="button" onClick={() => { setMode("binary"); resetResults(); }}>Binary</button>
+                <button aria-pressed={mode === "continuous"} className={mode === "continuous" ? "active" : ""} type="button" onClick={() => { setMode("continuous"); resetResults(); }}>Continuous</button>
               </div>
               {mode === "binary" ? (
                 <BinaryFields form={binaryForm} onChange={setBinaryForm} analysis={binaryAnalysis} onAnalysisChange={setBinaryAnalysis} />
@@ -271,8 +295,11 @@ export default function App() {
             <CsvImportPanel onValidated={handleImportedDataset} />
           )}
 
-          <section className="result-panel" aria-label="Simulation result">
-            {status === "error" ? <p className="error-message">{error}</p> : null}
+          <section className="result-panel" aria-label="Simulation result" aria-busy={status === "loading"}>
+            <p className="sr-only" aria-live="polite">
+              {status === "loading" ? "Experiment analysis is running." : ""}
+            </p>
+            {status === "error" ? <p className="error-message" role="alert">{error}</p> : null}
             {!result ? (
               <div className="empty-state">
                 <h2>Dataset results</h2>
@@ -286,19 +313,20 @@ export default function App() {
                     <h2>{source === "simulation" ? "Generated dataset" : "Imported dataset"}</h2>
                   </div>
                   <div className="result-actions">
+                    <span className="result-actions-label">Export</span>
                     <button type="button" className="secondary-action" onClick={handleDownload}>
-                      Download CSV
+                      Data CSV
                     </button>
                     {analysisResult ? (
                       <>
                         <button type="button" className="secondary-action" onClick={handleJsonExport}>
-                          Download JSON
+                          JSON
                         </button>
                         <button type="button" className="secondary-action" onClick={handleResultsCsvExport}>
-                          Download results CSV
+                          Results CSV
                         </button>
                         <button type="button" className="secondary-action" onClick={handlePdfExport}>
-                          Download PDF
+                          PDF report
                         </button>
                       </>
                     ) : null}
@@ -308,10 +336,12 @@ export default function App() {
                 {result.metadata?.source === "csv_import" ? <ImportSummary metadata={result.metadata} /> : null}
                 {descriptiveSummary ? <DescriptiveSummary summary={descriptiveSummary} /> : null}
                 {analysisResult ? <AnalysisResult result={analysisResult} /> : null}
-                {analysisResult ? <ResamplingChart result={analysisResult} /> : null}
-                {diagnostics ? (
-                  <DiagnosticCharts metricType={result.metric_type} diagnostics={diagnostics} />
-                ) : null}
+                <Suspense fallback={<p className="chart-loading" role="status">Loading charts...</p>}>
+                  {analysisResult ? <ResamplingChart result={analysisResult} /> : null}
+                  {diagnostics ? (
+                    <DiagnosticCharts metricType={result.metric_type} diagnostics={diagnostics} />
+                  ) : null}
+                </Suspense>
                 <PreviewTable rows={previewRows} />
               </>
             )}
@@ -555,7 +585,7 @@ function MetadataGrid({ metadata }) {
     <dl className="metadata-grid">
       {entries.map(([key, value]) => (
         <div key={key}>
-          <dt>{key}</dt>
+          <dt>{key.replaceAll("_", " ")}</dt>
           <dd>{String(value)}</dd>
         </div>
       ))}

@@ -1,20 +1,6 @@
 import Plot from "react-plotly.js";
 
-const plotConfig = {
-  displaylogo: false,
-  responsive: true,
-  modeBarButtonsToRemove: ["lasso2d", "select2d"]
-};
-
-const baseLayout = {
-  autosize: true,
-  margin: { l: 52, r: 18, t: 42, b: 48 },
-  paper_bgcolor: "#ffffff",
-  plot_bgcolor: "#f8fbfc",
-  font: { color: "#293943", family: "Inter, system-ui, sans-serif" },
-  hoverlabel: { bgcolor: "#18242c", font: { color: "#ffffff" } },
-  yaxis: { title: "Count", rangemode: "tozero" }
-};
+import { axisLayout, BASE_LAYOUT, CHART_COLORS, PLOT_CONFIG } from "./plotTheme.js";
 
 export default function ResamplingChart({ result }) {
   if (result.test_name === "permutation_mean_test") {
@@ -44,19 +30,21 @@ function PermutationChart({ result }) {
           {
             type: "histogram",
             x: distribution,
-            marker: { color: "#176b87" },
+            marker: { color: CHART_COLORS.groupA, line: { color: "#ffffff", width: 0.4 } },
             opacity: 0.82,
             hovertemplate: "Difference: %{x:.4f}<br>Count: %{y}<extra></extra>"
           }
         ]}
         layout={{
-          ...baseLayout,
-          title: { text: "Null distribution", font: { size: 15 } },
-          xaxis: { title: "Permuted mean difference (B - A)" },
-          shapes: [verticalLine(result.statistic, "#a9422a")],
-          annotations: [lineLabel(result.statistic, "Observed", "#7b2e17")]
+          ...BASE_LAYOUT,
+          title: { ...BASE_LAYOUT.title, text: "Null distribution" },
+          bargap: 0.04,
+          xaxis: axisLayout({ title: "Permuted mean difference (B - A)" }),
+          yaxis: axisLayout({ title: "Frequency", rangemode: "tozero" }),
+          shapes: [verticalLine(result.statistic, CHART_COLORS.danger)],
+          annotations: [lineLabel(result.statistic, "Observed", CHART_COLORS.danger)]
         }}
-        config={plotConfig}
+        config={PLOT_CONFIG}
         className="plot"
         useResizeHandler
       />
@@ -78,27 +66,29 @@ function BootstrapChart({ result }) {
           {
             type: "histogram",
             x: distribution,
-            marker: { color: "#c75b39" },
+            marker: { color: CHART_COLORS.groupB, line: { color: "#ffffff", width: 0.4 } },
             opacity: 0.82,
             hovertemplate: "Difference: %{x:.4f}<br>Count: %{y}<extra></extra>"
           }
         ]}
         layout={{
-          ...baseLayout,
-          title: { text: "Bootstrap estimates", font: { size: 15 } },
-          xaxis: { title: "Resampled difference (B - A)" },
+          ...BASE_LAYOUT,
+          title: { ...BASE_LAYOUT.title, text: "Bootstrap estimates" },
+          bargap: 0.04,
+          xaxis: axisLayout({ title: "Resampled difference (B - A)" }),
+          yaxis: axisLayout({ title: "Frequency", rangemode: "tozero" }),
           shapes: [
-            verticalLine(lower, "#176b87", "dot"),
-            verticalLine(result.estimate, "#293943"),
-            verticalLine(upper, "#176b87", "dot")
+            verticalLine(lower, CHART_COLORS.interval, "dot"),
+            verticalLine(result.estimate, CHART_COLORS.ink),
+            verticalLine(upper, CHART_COLORS.interval, "dot")
           ],
           annotations: [
-            lineLabel(lower, "Lower", "#176b87"),
-            lineLabel(result.estimate, "Estimate", "#293943"),
-            lineLabel(upper, "Upper", "#176b87")
+            lineLabel(lower, "Lower", CHART_COLORS.interval),
+            lineLabel(result.estimate, "Estimate", CHART_COLORS.ink),
+            lineLabel(upper, "Upper", CHART_COLORS.interval)
           ]
         }}
-        config={plotConfig}
+        config={PLOT_CONFIG}
         className="plot"
         useResizeHandler
       />

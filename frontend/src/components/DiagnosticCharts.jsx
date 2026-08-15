@@ -1,24 +1,10 @@
 import Plot from "react-plotly.js";
 
-const colors = {
-  A: "#176b87",
-  B: "#c75b39"
-};
+import { axisLayout, BASE_LAYOUT, CHART_COLORS, PLOT_CONFIG } from "./plotTheme.js";
 
-const plotConfig = {
-  displaylogo: false,
-  responsive: true,
-  modeBarButtonsToRemove: ["lasso2d", "select2d"]
-};
-
-const baseLayout = {
-  autosize: true,
-  margin: { l: 52, r: 18, t: 42, b: 48 },
-  paper_bgcolor: "#ffffff",
-  plot_bgcolor: "#f8fbfc",
-  font: { color: "#293943", family: "Inter, system-ui, sans-serif" },
-  legend: { orientation: "h", y: 1.15 },
-  hoverlabel: { bgcolor: "#18242c", font: { color: "#ffffff" } }
+const groupColors = {
+  A: CHART_COLORS.groupA,
+  B: CHART_COLORS.groupB
 };
 
 export default function DiagnosticCharts({ metricType, diagnostics }) {
@@ -53,7 +39,10 @@ function BinaryRateChart({ diagnostics }) {
             type: "bar",
             x: diagnostics.groups,
             y: diagnostics.proportions,
-            marker: { color: diagnostics.groups.map((group) => colors[group]) },
+            marker: {
+              color: diagnostics.groups.map((group) => groupColors[group]),
+              line: { color: "#ffffff", width: 1 }
+            },
             error_y: { type: "data", array: errorPlus, arrayminus: errorMinus, visible: true },
             customdata: diagnostics.groups.map((_, index) => [
               diagnostics.successes[index],
@@ -63,12 +52,13 @@ function BinaryRateChart({ diagnostics }) {
           }
         ]}
         layout={{
-          ...baseLayout,
-          title: { text: "Observed success rates", font: { size: 15 } },
-          yaxis: { title: "Success rate", tickformat: ".0%", rangemode: "tozero" },
-          xaxis: { title: "Group" }
+          ...BASE_LAYOUT,
+          title: { ...BASE_LAYOUT.title, text: "Observed success rates" },
+          bargap: 0.48,
+          yaxis: axisLayout({ title: "Success rate", tickformat: ".0%", rangemode: "tozero" }),
+          xaxis: axisLayout({ title: "Experiment group", showgrid: false })
         }}
-        config={plotConfig}
+        config={PLOT_CONFIG}
         className="plot"
         useResizeHandler
       />
@@ -102,9 +92,9 @@ function HistogramChart({ histograms }) {
       x: centers,
       y: histogram.counts,
       width: widths,
-      marker: { color: colors[group] },
-      opacity: 0.68,
-      hovertemplate: `${group}: %{y} observations<extra></extra>`
+      marker: { color: groupColors[group], line: { color: "#ffffff", width: 0.5 } },
+      opacity: 0.62,
+      hovertemplate: `Group ${group}<br>Center: %{x:.4f}<br>Count: %{y}<extra></extra>`
     };
   });
 
@@ -113,13 +103,13 @@ function HistogramChart({ histograms }) {
       <Plot
         data={traces}
         layout={{
-          ...baseLayout,
+          ...BASE_LAYOUT,
           barmode: "overlay",
-          title: { text: "Histograms", font: { size: 15 } },
-          xaxis: { title: "Observed value" },
-          yaxis: { title: "Count", rangemode: "tozero" }
+          title: { ...BASE_LAYOUT.title, text: "Histograms" },
+          xaxis: axisLayout({ title: "Observed value" }),
+          yaxis: axisLayout({ title: "Observations", rangemode: "tozero" })
         }}
-        config={plotConfig}
+        config={PLOT_CONFIG}
         className="plot"
         useResizeHandler
       />
@@ -136,8 +126,12 @@ function BoxplotChart({ boxplots }) {
     q3: [boxplots[group].q3],
     lowerfence: [boxplots[group].minimum],
     upperfence: [boxplots[group].maximum],
-    marker: { color: colors[group] },
-    boxpoints: false
+    marker: { color: groupColors[group] },
+    line: { color: groupColors[group], width: 2 },
+    fillcolor: groupColors[group],
+    opacity: 0.72,
+    boxpoints: false,
+    hovertemplate: `Group ${group}<br>Value: %{y:.4f}<extra></extra>`
   }));
 
   return (
@@ -145,11 +139,12 @@ function BoxplotChart({ boxplots }) {
       <Plot
         data={traces}
         layout={{
-          ...baseLayout,
-          title: { text: "Boxplot summaries", font: { size: 15 } },
-          yaxis: { title: "Observed value" }
+          ...BASE_LAYOUT,
+          title: { ...BASE_LAYOUT.title, text: "Boxplot summaries" },
+          xaxis: axisLayout({ showgrid: false }),
+          yaxis: axisLayout({ title: "Observed value" })
         }}
-        config={plotConfig}
+        config={PLOT_CONFIG}
         className="plot"
         useResizeHandler
       />
@@ -164,8 +159,13 @@ function QQPlotChart({ qqPlots }) {
     name: `Group ${group}`,
     x: qqPlots[group].theoretical_quantiles,
     y: qqPlots[group].sample_quantiles,
-    marker: { color: colors[group], size: 6, opacity: 0.72 },
-    hovertemplate: "Theoretical: %{x:.3f}<br>Observed: %{y:.3f}<extra></extra>"
+    marker: {
+      color: groupColors[group],
+      size: 7,
+      opacity: 0.76,
+      line: { color: "#ffffff", width: 0.5 }
+    },
+    hovertemplate: `Group ${group}<br>Theoretical: %{x:.3f}<br>Observed: %{y:.3f}<extra></extra>`
   }));
 
   return (
@@ -173,12 +173,12 @@ function QQPlotChart({ qqPlots }) {
       <Plot
         data={traces}
         layout={{
-          ...baseLayout,
-          title: { text: "Normal QQ plots", font: { size: 15 } },
-          xaxis: { title: "Theoretical normal quantile" },
-          yaxis: { title: "Observed quantile" }
+          ...BASE_LAYOUT,
+          title: { ...BASE_LAYOUT.title, text: "Normal QQ plots" },
+          xaxis: axisLayout({ title: "Theoretical normal quantile" }),
+          yaxis: axisLayout({ title: "Observed quantile" })
         }}
-        config={plotConfig}
+        config={PLOT_CONFIG}
         className="plot"
         useResizeHandler
       />

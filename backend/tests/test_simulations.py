@@ -68,3 +68,12 @@ def test_simulation_endpoint_returns_validation_errors() -> None:
     )
 
     assert response.status_code == 422
+    assert response.json()["error"]["code"] == "INVALID_REQUEST"
+    assert response.json()["error"]["message"] == (
+        "The request does not match the expected API contract."
+    )
+    assert response.json()["error"]["details"]["errors"][0] == {
+        "location": ["body", "n_a"],
+        "message": "Input should be greater than or equal to 1",
+        "type": "greater_than_equal",
+    }

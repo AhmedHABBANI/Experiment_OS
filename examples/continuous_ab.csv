@@ -1,0 +1,9 @@
+order_id,variant,revenue
+C001,control,42.5
+C002,treatment,49.0
+C003,control,38.0
+C004,treatment,55.5
+C005,control,51.25
+C006,treatment,47.75
+C007,control,46.0
+C008,treatment,60.0

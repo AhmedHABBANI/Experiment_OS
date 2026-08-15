@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 11 - CI and documentation in progress
+Phase 12 - portfolio version completed
 
 ## Completed
 
@@ -989,13 +989,37 @@ Phase 11 - CI and documentation in progress
 
 ## Files modified in the current milestone
 
+- `README.md`
 - `specs/STATUS.md`
+- `docker-compose.yml`
+- `backend/app/errors.py`
+- `backend/tests/test_simulations.py`
+- `frontend/package.json`
+- `frontend/package-lock.json`
+- `frontend/src/App.jsx`
+- `frontend/src/components/AnalysisResult.jsx`
+- `frontend/src/components/CsvImportPanel.jsx`
+- `frontend/src/components/DiagnosticCharts.jsx`
+- `frontend/src/components/ResamplingChart.jsx`
+- `frontend/src/styles.css`
+- `frontend/src/tests/AnalysisResult.test.jsx`
+- `frontend/src/tests/App.test.jsx`
+- `frontend/src/tests/DiagnosticCharts.test.jsx`
+- `frontend/src/tests/ResamplingChart.test.jsx`
 
 ## Files added in the current milestone
 
-- `.github/workflows/backend.yml`
-- `.github/workflows/frontend.yml`
-- `.github/workflows/docker.yml`
+- `frontend/src/components/plotTheme.js`
+- `docs/csv-format.md`
+- `docs/statistical-methods.md`
+- `docs/interpretation-guide.md`
+- `docs/screenshots/workspace-desktop.png`
+- `docs/screenshots/workspace-mobile.png`
+- `examples/binary_ab.csv`
+- `examples/continuous_ab.csv`
+- `backend/tests/test_csv_examples.py`
+- `backend/tests/test_errors.py`
+- `.env.example`
 
 ## Files deleted in the current milestone
 
@@ -1003,13 +1027,265 @@ Phase 11 - CI and documentation in progress
 
 ## Current milestone status
 
-- Phase 11 first milestone completed: automated backend, frontend and Docker quality gates
+- Phase 12 completed: the repository now presents ExperimentOS as a recruiter-readable,
+  technically evidenced portfolio project
+- The README opens with live GitHub Actions badges, stack and coverage badges, a concise
+  product proposition, and the real desktop application screenshot
+- The problem, workflow, seven statistical methods, common result contract, architecture,
+  privacy model, and distinction from a notebook are readable in under two minutes
+- A GitHub-rendered Mermaid diagram documents frontend, API, service, statistical-engine,
+  scientific-dependency, and in-memory export boundaries
+- Statistical safeguards and seeded Monte-Carlo acceptance criteria are documented from
+  the actual test suite without presenting bounded CI checks as universal guarantees
+- Engineering decisions, repository map, quick start, validation commands, detailed
+  documentation links, mobile screenshot, limitations, and future work are included
+- All README-local links and image paths were checked and exist in the repository
+- GitHub CLI is not installed, so repository description, topics, social preview, and
+  license selection remain GitHub-side owner actions; the Git remote is configured
+- Phase 11.5 completed: the complete workspace now uses one professional visual and
+  interaction system across simulation, CSV import, analysis, charts, and exports
+- The CSV workflow is organized into explicit file-selection, column-inspection, and
+  experiment-mapping steps without changing API requests or mapping semantics
+- Selected-file size and in-memory processing are visible before preview; loading and
+  validation states retain live-region announcements
+- CSV previews expose row, column, and delimiter facts; inferred column types and missing
+  counts use compact badges; the data table supports horizontal scrolling and row scanning
+- Group and metric mappings use separate fieldsets, paired A/B values, and a responsive
+  single-column layout on narrow screens
+- The phase introduced no new dependency, backend contract, statistical calculation,
+  persistence mechanism, authentication, or marketing landing page
+- Phase 11.5 acceptance criteria are satisfied with the documented browser-tool limitation
+  for interactive screenshots; functional result, chart, import, and export states are
+  covered by React Testing Library
+- Phase 11.5 third visual increment completed: Plotly diagnostics and resampling charts
+- A shared Plotly theme now centralizes the A/B palette, axes, grid, typography,
+  hover labels, margins, legend, and interaction configuration
+- Group A consistently uses blue and group B uses a distinct rust tone across binary
+  rates, histograms, boxplots, and QQ plots
+- Permutation and bootstrap distributions use clearer frequency axes, restrained bins,
+  and consistent observed-estimate and interval markers
+- Plotly modebars remain available but visually recede until chart hover or keyboard focus
+- Chart summaries now use the workspace surface and border system and remain visible
+  textual alternatives to the interactive plots
+- Chart heights and grid layouts adapt at desktop, tablet, and mobile breakpoints
+- Phase 11.5 second visual increment completed: statistical results and export hierarchy
+- Statistical decisions now lead the result view with distinct reject, do-not-reject,
+  and estimation-only treatments
+- The `B - A` estimate and p-value are prioritized while test statistic and effect size
+  remain available as supporting measures
+- Confidence intervals, hypotheses, deterministic interpretation, and statistical
+  cautions are separated into scannable sections without changing their source content
+- Export actions are grouped and shortened while preserving data CSV, JSON, result CSV,
+  and PDF capabilities
+- Dataset metadata labels are normalized for display without changing metadata keys
+- Responsive result layouts stack metrics, interpretation, intervals, and warnings on
+  narrow screens
+- Phase 11.5 first visual increment completed: design foundations, product header, and
+  workspace structure
+- A compact ExperimentOS header now identifies the product, local execution, and
+  session-only behavior without introducing a landing page
+- The active source, metric type, and `B - A` direction remain visible in a responsive
+  experiment-context bar
+- Shared visual tokens now define functional colors, surfaces, borders, shadows, focus
+  treatment, and interaction states
+- The primary workspace has clearer hierarchy, restrained typography, denser controls,
+  and improved empty-state presentation
+- Desktop and mobile captures were regenerated from the running Docker application and
+  visually inspected with no overlap, clipping, or horizontal overflow found
+- Phase 11 completed: CI, documentation, examples, captures, and stabilization
+- README, CSV, statistical-method, and deterministic-interpretation documentation is current
+- GitHub Actions covers Python quality, frontend quality, Docker builds, and Compose validation
+- API request-validation and unexpected errors use stable safe payloads; unexpected
+  failures are logged server-side without exposing details to clients
+- Frontend segmented controls expose their selected state, loading and error states are
+  announced, and mobile controls no longer overflow
+- Plotly is loaded on demand: the initial JavaScript chunk decreased from about 5,116
+  kB to 222 kB; the deferred Plotly chunk remains about 4,873 kB
+- Vitest was updated to 4.1.10 and the complete npm audit reports zero vulnerabilities
+- Source inspection found no database, browser storage, or application-level file persistence
+- Desktop and mobile screenshots were generated from the running local application and
+  visually inspected
+
+## Current milestone validation
+
+- Phase 12 final `\.venv\Scripts\ruff.exe format .`: passed, 91 files left unchanged
+- Phase 12 final `\.venv\Scripts\ruff.exe check .`: passed
+- Phase 12 final Python 3.12 Docker `pytest`: passed, 376 tests and 1 existing Starlette
+  TestClient deprecation warning
+- Phase 12 final Python 3.12 Docker coverage validation: passed, 376 tests and 98.99%
+  branch coverage for `experiment_os_stats`
+- Phase 12 final frontend lint: passed
+- Phase 12 final frontend tests: passed, 7 files and 31 tests
+- Phase 12 final frontend build: passed; initial application chunk 225.05 kB and deferred
+  Plotly/theme chunk 4,874.09 kB
+- Phase 12 README local-link and image-path verification: passed
+- Phase 12 final `git diff --check`: passed with expected Windows LF-to-CRLF
+  working-copy notices only
+- GitHub CLI availability check: unavailable because `gh` is not installed
+- Phase 11.5 closing frontend lint: passed
+- Phase 11.5 closing frontend tests: passed, 7 files and 31 tests
+- Phase 11.5 closing frontend build: passed; initial application chunk 225.05 kB and
+  deferred Plotly/theme chunk 4,874.09 kB
+- Phase 11.5 closing frontend dependency audit: passed, 0 vulnerabilities across 654
+  production, development, optional, and peer dependencies
+- Phase 11.5 closing frontend Docker build and Compose startup: passed
+- Phase 11.5 closing desktop and mobile shell captures: passed visual inspection with no
+  visible overlap, clipping, or horizontal overflow
+- Interactive CSV/result/chart capture remained unavailable because the in-app browser
+  execution tool was not exposed; those states passed focused component and workflow tests
+- Phase 11.5 closing `\.venv\Scripts\ruff.exe format .`: passed, 91 files left unchanged
+- Phase 11.5 closing `\.venv\Scripts\ruff.exe check .`: passed
+- Phase 11.5 closing Python 3.12 Docker `pytest`: passed, 376 tests and 1 existing
+  Starlette TestClient deprecation warning
+- Phase 11.5 closing Python 3.12 Docker coverage validation: passed, 376 tests and
+  98.99% branch coverage for `experiment_os_stats`
+- Phase 11.5 closing `docker compose config -q`: passed
+- Phase 11.5 closing runtime smoke test: frontend returned HTTP 200 and API health
+  returned `ok`; backend and frontend containers remained running
+- Phase 11.5 closing `git diff --check`: passed with expected Windows LF-to-CRLF
+  working-copy notices only
+- Phase 11.5 chart-increment frontend lint: passed
+- Phase 11.5 chart-increment frontend tests: passed, 7 files and 31 tests
+- Phase 11.5 chart-increment frontend build: passed; initial application chunk 223.51 kB
+  and deferred Plotly/theme chunk 4,874.09 kB
+- Phase 11.5 chart-increment frontend Docker image rebuild and Compose startup: passed
+- Interactive chart capture was unavailable because the in-app browser execution tool
+  was not exposed; Plotly palette, axes, interval markers, responsiveness, and textual
+  summaries were validated by focused component tests
+- Phase 11.5 chart-increment final `\.venv\Scripts\ruff.exe format .`: passed, 91 files
+  left unchanged
+- Phase 11.5 chart-increment final `\.venv\Scripts\ruff.exe check .`: passed
+- Phase 11.5 chart-increment final Python 3.12 Docker `pytest`: passed, 376 tests and
+  1 existing Starlette TestClient deprecation warning
+- Phase 11.5 chart-increment final Python 3.12 Docker coverage validation: passed,
+  376 tests and 98.99% branch coverage for `experiment_os_stats`
+- Phase 11.5 chart-increment final `git diff --check`: passed with expected Windows
+  LF-to-CRLF working-copy notices only
+- Phase 11.5 second-increment frontend lint: passed
+- Phase 11.5 second-increment frontend tests: passed, 7 files and 30 tests
+- Phase 11.5 second-increment frontend build: passed; initial application chunk 223.51 kB
+  and deferred Plotly chunk 4,873.21 kB
+- Phase 11.5 second-increment frontend Docker image rebuild and Compose startup: passed
+- Phase 11.5 second-increment shell screenshots: desktop and mobile empty states passed
+  visual inspection with no visible overlap, clipping, or horizontal overflow
+- Interactive result-state browser capture was unavailable because the in-app browser
+  execution tool was not exposed; result-state structure and content were validated by
+  focused React Testing Library tests instead
+- Phase 11.5 second-increment final `\.venv\Scripts\ruff.exe format .`: passed, 91 files
+  left unchanged
+- Phase 11.5 second-increment final `\.venv\Scripts\ruff.exe check .`: passed
+- Phase 11.5 second-increment final Python 3.12 Docker `pytest`: passed, 376 tests and
+  1 existing Starlette TestClient deprecation warning
+- Phase 11.5 second-increment final Python 3.12 Docker coverage validation: passed,
+  376 tests and 98.99% branch coverage for `experiment_os_stats`
+- Phase 11.5 second-increment final `git diff --check`: passed with expected Windows
+  LF-to-CRLF working-copy notices only
+- Phase 11.5 initial `\.venv\Scripts\ruff.exe format --check .`: passed, 91 files
+  already formatted
+- Phase 11.5 initial `\.venv\Scripts\ruff.exe check .`: passed
+- Phase 11.5 initial Python 3.12 Docker `pytest`: passed, 376 tests and 1 existing
+  Starlette TestClient deprecation warning
+- Phase 11.5 initial Python 3.12 Docker coverage validation: passed, 376 tests and
+  98.99% branch coverage for `experiment_os_stats`
+- Phase 11.5 initial frontend lint: passed
+- Phase 11.5 initial frontend tests: passed, 7 files and 28 tests
+- Phase 11.5 initial frontend build: passed with the existing deferred Plotly chunk warning
+- Phase 11.5 first-increment frontend lint: passed
+- Phase 11.5 first-increment frontend tests: passed, 7 files and 29 tests
+- Phase 11.5 first-increment frontend build: passed; initial application chunk 222.96 kB
+  and deferred Plotly chunk 4,873.21 kB
+- Phase 11.5 frontend Docker image rebuild and Compose startup: passed
+- Phase 11.5 desktop and mobile visual inspection: passed with no visible overlap,
+  clipping, or horizontal overflow
+- Phase 11.5 final `\.venv\Scripts\ruff.exe format .`: passed, 91 files left unchanged
+- Phase 11.5 final `\.venv\Scripts\ruff.exe check .`: passed
+- Phase 11.5 final Python 3.12 Docker `pytest`: passed, 376 tests and 1 existing
+  Starlette TestClient deprecation warning
+- Phase 11.5 final Python 3.12 Docker coverage validation: passed, 376 tests and
+  98.99% branch coverage for `experiment_os_stats`
+- Phase 11.5 final `git diff --check`: passed; Git only reported expected LF-to-CRLF
+  working-copy notices
+- `ruff format --check .`: unavailable as a bare command because Ruff is not in this
+  shell's `PATH`
+- `ruff check .`: unavailable as a bare command because Ruff is not in this shell's
+  `PATH`
+- `pytest`: unavailable as a bare command because Pytest is not in this shell's `PATH`
+- `pytest --cov=experiment_os_stats --cov-report=term-missing`: unavailable as a bare
+  command because Pytest is not in this shell's `PATH`
+- `.\.venv\Scripts\ruff.exe format --check .`: passed, 89 files already formatted
+- `.\.venv\Scripts\ruff.exe check .`: passed
+- `.\.venv\Scripts\pytest.exe`: could not start because the existing virtual
+  environment references a removed Python 3.12 interpreter
+- First Docker fallback omitted `backend[dev]` and failed during collection because
+  `pypdf` was missing; no tests ran
+- Python 3.12 Docker validation with both editable development packages: passed,
+  373 tests and 1 Starlette TestClient deprecation warning
+- Python 3.12 Docker coverage validation: passed, 373 tests, 98.99% branch coverage
+  for `experiment_os_stats`, above the required 85%
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 89 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Final Python 3.12 Docker `pytest`: passed, 373 tests and 1 Starlette TestClient
+  deprecation warning
+- Final Python 3.12 Docker coverage validation: passed, 373 tests, 98.99% branch
+  coverage for `experiment_os_stats`
+- CSV guide initial bare Ruff and Pytest commands: unavailable because the tools are
+  not in this shell's `PATH`
+- CSV guide initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 89 files
+  already formatted
+- CSV guide initial `.\.venv\Scripts\ruff.exe check .`: passed
+- First CSV guide Docker validation attempt: stopped before test collection because a
+  downloaded package did not match pip's expected hash
+- CSV guide Docker validation retry: passed, 373 tests and 98.99% branch coverage for
+  `experiment_os_stats`, with 1 Starlette TestClient deprecation warning
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 90 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Targeted published CSV example validation: passed, 2 tests
+- Final Python 3.12 Docker `pytest`: passed, 375 tests and 1 Starlette TestClient
+  deprecation warning
+- Final Python 3.12 Docker coverage validation: passed, 375 tests, 98.99% branch
+  coverage for `experiment_os_stats`
+- Phase 11 targeted API error validation: passed, 4 tests
+- Phase 11 final `.\.venv\Scripts\ruff.exe format .`: passed, 91 files left unchanged
+- Phase 11 final `.\.venv\Scripts\ruff.exe check .`: passed
+- Phase 11 final Python 3.12 Docker `pytest`: passed, 376 tests and 1 Starlette
+  TestClient deprecation warning
+- Phase 11 final Python 3.12 Docker coverage validation: passed, 376 tests, 98.99%
+  branch coverage for `experiment_os_stats`
+- Final `npm.cmd ci`: passed with Vitest 4.1.10
+- Final `npm.cmd audit --json`: passed, 0 vulnerabilities across production and
+  development dependencies
+- Final `npm.cmd run lint`: passed
+- Final `npm.cmd run test`: passed, 7 files and 28 tests
+- Final `npm.cmd run build`: passed; initial application chunk 221.92 kB and deferred
+  Plotly chunk 4,873.21 kB
+- Final `docker compose config -q`: passed
+- Final `docker compose build`: passed for backend and frontend
+- Final runtime verification: frontend 200, health `ok`, seeded binary simulation and
+  two-proportion z analysis passed, invalid request returned `INVALID_REQUEST`
+- Final container inspection: backend and frontend running; startup and request logs
+  contained no application errors
+- Statistical guide initial bare Ruff and Pytest commands: unavailable because the
+  tools are not in this shell's `PATH`
+- Statistical guide initial `.\.venv\Scripts\ruff.exe format --check .`: passed, 90
+  files already formatted
+- Statistical guide initial `.\.venv\Scripts\ruff.exe check .`: passed
+- Statistical guide initial Python 3.12 Docker `pytest`: passed, 375 tests and 1
+  Starlette TestClient deprecation warning
+- Statistical guide initial Python 3.12 Docker coverage validation: passed, 375 tests,
+  98.99% branch coverage for `experiment_os_stats`
+- Final `.\.venv\Scripts\ruff.exe format .`: passed, 90 files left unchanged
+- Final `.\.venv\Scripts\ruff.exe check .`: passed
+- Statistical guide local-link and seven-section verification: passed
+- Final Python 3.12 Docker `pytest`: passed, 375 tests and 1 Starlette TestClient
+  deprecation warning
+- Final Python 3.12 Docker coverage validation: passed, 375 tests, 98.99% branch
+  coverage for `experiment_os_stats`
 
 ## Next milestone
 
-Continue Phase 11 with a focused README and local-run documentation milestone:
+Prepare the public `v0.1.0` repository release:
 
-- update the stale project status and capability list
-- document the authoritative local setup and validation commands
-- document the complete simulation/import/analysis/export workflow at a high level
-- defer the detailed CSV, statistical-method and interpretation guides to separate milestones
+- choose and add the intended open-source license
+- configure the GitHub description, topics, and social preview image
+- verify the pushed GitHub Actions workflows are green
+- create a `v0.1.0` tag and release after owner review
